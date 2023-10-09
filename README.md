@@ -51,8 +51,10 @@ And in the void setup()
  
  ....
 
-      planner.linkMotor(&motor);
+  planner.linkMotor(&motor);
+	  
   commander.add('G', doPlanner, "Motion Planner");
+  
   commander.add('M', MPlanner, "Motion Planner");
 
  ....
@@ -64,14 +66,17 @@ And in the void setup()
   Here is a example of a loop that will run the planner on every tick.
 
    // main FOC algorithm function
+   
   motor.loopFOC();
 
   // Motion control function
+  
   motor.move();
 
   //motor.monitor();
   
   commander.run();
+  
   planner.runPlannerOnTick();
 
 
