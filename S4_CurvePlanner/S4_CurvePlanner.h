@@ -1,6 +1,14 @@
 
-// This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This iteration calculates the motion in a S-curve using sinusoidal calculations (1.0 - cos(t)). 
+
+//In development - not testet at this moment. Code compiles. 
+/**************************************************************************************************************************/
+
+// This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This iteration calculates 4th order s-curve. 
+// 4th order s-curve is divided into 15 time segments. 
 // The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are not linear, but curved.
+
+/**************************************************************************************************************************/
+
 // Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
 // and the planner will execute the commands in the order they were received. Therefore the planner will be able to execute varius G and M commands.
 // In order to use it with the SimpleFOC library, the planner will need to be created and linked in the main.cpp file, and the runPlannerOnTick() function will need to be called in the main loop.
