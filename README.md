@@ -8,6 +8,11 @@ This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This
 
 The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are curved.
 
+All the math for the 4th order planner was taken from this ressource, with the help of ChatGPT.
+
+
+[Kinematically Constrained Jerk–Continuous S-Curve Trajectory Planning in Joint Space for Industrial Robots](https://www.mdpi.com/2079-9292/12/5/1135)
+
 
 
 Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
@@ -26,7 +31,7 @@ This figure illustrates how the motion-profile is divided into 15 time segments.
 
 
 
-/****** * [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)* ********/
+[FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)
 
 S4_CurvePlanner planner(5);
 // Further more we need to add the following to the main.cpp.
