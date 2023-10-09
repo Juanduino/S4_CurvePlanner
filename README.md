@@ -18,7 +18,7 @@ The commander is obviosly also needed.
 We need to create a circularBuffer class in the same lib folder as the planner is #include "../CircularBuffer/CircularBuffer.h" 
 NOTE: The circular buffer class was a colaboration with GPTchat.
 
-This fugire ilustrates how the motion-profile is divided into 15 time segments.
+This figure illustrates how the motion-profile is divided into 15 time segments.
 
 ![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/Figure%203.png)
 
