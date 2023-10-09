@@ -39,7 +39,7 @@ void MPlanner(char *cmd){
 
 
 
-And in the void setup() {
+And in the void setup() 
  
  ....
 
@@ -49,13 +49,13 @@ And in the void setup() {
 
  ....
   
-  }
+  
   
   
 
   Here is a example of a loop that will run the planner on every tick.
 
-    // main FOC algorithm function
+   // main FOC algorithm function
   motor.loopFOC();
 
   // Motion control function
