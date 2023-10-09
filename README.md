@@ -1,13 +1,13 @@
 # S4 CurvePlanner C++ 4th order S-curve motion-planner
 
 //In development - not testet at this moment. Code compiles. 
-/**************************************************************************************************************************/
+/***********************************************************************/
 
 // This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This iteration calculates 4th order s-curve. 
 // 4th order s-curve is divided into 15 time segments. 
 // The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are not linear, but curved.
 
-/**************************************************************************************************************************/
+/*********************************************************************/
 
 // Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
 // and the planner will execute the commands in the order they were received. Therefore the planner will be able to execute varius G and M commands.
@@ -23,7 +23,7 @@ This fugire ilustrates how the motion-profile is divided into 15 time segments.
 
 
 
-/***************** FOR USE WITH SIMPLEFOC *********************************************************************************/
+/******* * FOR USE WITH SIMPLEFOC * **************/
 
 // S4_CurvePlanner planner(5);
 // Further more we need to add the following to the main.cpp.
