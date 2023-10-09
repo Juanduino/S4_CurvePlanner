@@ -18,7 +18,7 @@ public:
 
 private:
     
-    StepperMotor* motor;
+    FOCMotor * motor;
     unsigned long plannerTimeStap;
     int plannerPeriod = 0.5; // 1000 / this number = Hz, i.e. 1000 / 100 = 10Hz, 1000 / 10 = 100Hz, 1000 / 5 = 200Hz, 1000 / 1 = 1000hZ
     float Vmax_ = 30.0f;    // # Velocity max (rads/s)
@@ -44,9 +44,9 @@ private:
     
 
     float CalculateTs();
-    float CalculateTj(float Ts);
+    float CalculateTj();
     float CalculateTa();
-    float CalculateTv(float Ta);
+    float CalculateTv();
     float findTf(float Ts, float Tj, float Ta, float Tv, float Td);
 
     float jmax; // Max jerk

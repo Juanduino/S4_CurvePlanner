@@ -435,7 +435,7 @@ float S4_CurvePlanner::CalculateTs() {
 
 
 
-float S4_CurvePlanner::CalculateTj(float Ts) {
+float S4_CurvePlanner::CalculateTj() {
     // Calculate dmax from the displacement constraint
     float dmax = std::abs(qe - qs);
      Ts = (4 * dmax) / (8 * Smax_);
@@ -486,9 +486,7 @@ float S4_CurvePlanner::CalculateTj(float Ts) {
 float S4_CurvePlanner::CalculateTa() {
     // Calculate dmax from the displacement constraint
     float dmax = std::abs(qe - qs);
-    float Ts = (4 * dmax) / (8 * Smax_);
-    float Tj = Ts;
-
+    
     // Calculate Tda based on the displacement constraint (Equation 23)
     float Tda = ((3 * std::pow(Tj, 2)) / 2) - (3 * Ts) + ((std::pow(2 * Ts + Tj, 2)) / 4) + (std::abs(qe - qs) / (Amax_));
 
@@ -502,7 +500,7 @@ float S4_CurvePlanner::CalculateTa() {
 
 
 
-float S4_CurvePlanner::CalculateTv(float Ta) {
+float S4_CurvePlanner::CalculateTv() {
     // Calculate dmax from the displacement constraint
     float dmax = std::abs(qe - qs);
     float Ts = (4 * dmax) / (8 * Smax_);
@@ -517,23 +515,23 @@ float S4_CurvePlanner::CalculateTv(float Ta) {
 bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vmax, float Amax, float Dmax, float Jmax, float Smax) {
 
 
-     // Calculate the time intervals
-     Ts = Jmax_ / Smax_;
-     Tj = Amax_ / Jmax_ - Ts;
-     Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
-     Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
+        // Calculate the time intervals
+        Ts = Jmax_ / Smax_;
+        Tj = Amax_ / Jmax_ - Ts;
+        Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
+        Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
 
-     // Calculate the maximum motion parameters
-     jmax = Smax_ * Ts;
-     amax = Smax_ * Ts * (Ts + Tj);
-     vmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta);
-     dmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta) * (4 * Ts + 2 * Tj + Ta + Tv);
+        // Calculate the maximum motion parameters
+        jmax = Smax_ * Ts;
+        amax = Smax_ * Ts * (Ts + Tj);
+        vmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta);
+        dmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta) * (4 * Ts + 2 * Tj + Ta + Tv);
 
-     // Calculate the time intervals
-     Ts = CalculateTs();
-     Tj = CalculateTj(Ts);
-     Ta = CalculateTa();
-     Tv = CalculateTv(Ta);
+        // Calculate the time intervals
+        Ts = CalculateTs();
+        Tj = CalculateTj();
+        Ta = CalculateTa();
+        Tv = CalculateTv();
 
         // Calculate transition times for acceleration phase, using Ts (varying jerk), Tj (constant jerk), and Tv(constant velocity - aka cruice)
          t1 = Ts;
