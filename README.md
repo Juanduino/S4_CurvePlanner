@@ -4,8 +4,10 @@
 /***********************************************************************/
 
 // This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This iteration calculates 4th order s-curve. 
+
 // 4th order s-curve is divided into 15 time segments. 
-// The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are not linear, but curved.
+
+// The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are curved.
 
 /*********************************************************************/
 
