@@ -18,7 +18,7 @@
 // NOTE: The circular buffer class was a colaboration with GPTchat.
 //
 
-// TrapezoidalPlanner planner(5);
+// S4_CurvePlanner planner(5);
 // 
 //
 // Further more we need to add the following to the main.cpp.
