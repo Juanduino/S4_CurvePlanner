@@ -24,8 +24,9 @@ This figure illustrates how the motion-profile is divided into 15 time segments.
 
 
 
-/****** * FOR USE WITH SIMPLEFOC * ********/
-[SimpleFOC Community Link](https://community.simplefoc.com/)
+
+
+/****** * [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)* ********/
 
 S4_CurvePlanner planner(5);
 // Further more we need to add the following to the main.cpp.
