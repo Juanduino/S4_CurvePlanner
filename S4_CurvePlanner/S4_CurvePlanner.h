@@ -21,11 +21,10 @@ private:
     FOCMotor * motor;
     unsigned long plannerTimeStap;
     int plannerPeriod = 0.5; // 1000 / this number = Hz, i.e. 1000 / 100 = 10Hz, 1000 / 10 = 100Hz, 1000 / 5 = 200Hz, 1000 / 1 = 1000hZ
-    float Vmax_ = 30.0f;    // # Velocity max (rads/s)
-    float Amax_ = 20.0f;    // # Acceleration max (rads/s/s)
-    float Dmax_ = 20.0f;    // # Displacement max (rads)
-    float Jmax_ = 20.0f;    // # Jerk max (rads/s/s/s)
-    float Smax_ = 20.0f;    // # Snap max (rads/s/s/s/s)
+    float _Vmax_ = 30.0f;    // # Velocity max (rads/s)
+    float _Amax_ = 20.0f;    // # Acceleration max (rads/s/s)
+    float _Jmax_ = 20.0f;    // # Jerk max (rads/s/s/s)
+    float _Smax_ = 20.0f;    // # Snap max (rads/s/s/s/s)
     float qs;              // Start position
     float qe;              // Final position
 
@@ -59,6 +58,7 @@ private:
     float amax; // Max acceleration
     float vmax; // Max velocity
     float dmax; // Max displacemnt 
+    float smax; // MAX snap
 
     float pos_target;
     float jerk_now;
@@ -77,7 +77,7 @@ private:
     float sign(float val);
     float sign_hard(float val);
 
-    bool calculateVariables(float Xf, float Xi, float Vi, float Vmax, float Amax, float Dmax, float Jmax, float Smax);
+    bool calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_);
 
     void Initiate_Move(float Pos);
     void RuntimePlanner(float currentTrajectoryTime);
