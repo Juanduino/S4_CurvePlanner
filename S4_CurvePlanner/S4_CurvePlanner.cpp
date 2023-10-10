@@ -415,20 +415,24 @@ float S4_CurvePlanner::sign_hard(float val){
 
 
 float S4_CurvePlanner::CalculateTs() {
+
+
     // Step 1: Calculate Ts from displacement constraint
     
-    float Ts_d = (4 * dmax) / (8 * smax);
+    float Ts_d = 4 * sqrt(dmax / (8 * smax));
 
     // Step 2: Calculate Ts from velocity constraint
     
-    float Ts_v = (3 * vmax) / (2 * smax);
+    float Ts_v = 4 * sqrt(vmax / (2 * smax));
 
     // Step 3: Calculate Ts from acceleration constraint
     
-    float Ts_a = (pow(amax, 2)) / smax;
+    float Ts_a = sqrt(amax / smax);
 
     // Step 4: Calculate Ts from jerk constraint
-    float Ts_j = jmax / smax;
+    float Ts_j = sqrt(jmax / smax);
+
+
 
     #ifdef __debug
     SerialUSB.println("*******************************");
@@ -453,15 +457,15 @@ float S4_CurvePlanner::CalculateTs() {
 float S4_CurvePlanner::CalculateTj() {
 
     // Calculate Tdj based on the displacement constraint (Equation 16)
-    float Tdj = (std::abs(qe - qs) / (4 * jmax)) + (Ts / (27 * std::pow(vmax, 2))) + ((std::abs(qe - qs) * Ts) / (54 * jmax))
-        + ((std::pow(std::abs(qe - qs), 2)) / (16 * std::pow(jmax, 2))) + ((3 * Ts) / (27 * std::pow(vmax, 2))) 
-        - ((std::abs(qe - qs)) / (4 * jmax));
 
+    float Tjd = 3 * sqrt((pow(Ts, 3)/27) + (dmax / (4 * jmax)) + sqrt((dmax / (54 * jmax)) + (pow(dmax, 2)/ (16 * pow(jmax, 2))))) 
+    + sqrt((pow(Ts, 3) / 27) + (dmax / (4 * jmax)) - sqrt((dmax * pow(Ts, 3)) / (54 * jmax) + (pow(dmax, 2) / (16 * pow(jmax, 2))))) - ((5 * Ts) / 3); 
+   
     // Calculate Tvj based on the velocity constraint (Equation 18)
-    float Tvj = (std::pow(Ts, 2) / (4 * smax)) + (vmax / jmax) - ((3 * std::pow(Ts, 2)) / (2));
+    float Tjv = sqrt((pow(Ts, 2) / 4) + (vmax / jmax) - ((3 * Ts) / 2));
 
     // Calculate Taj based on the acceleration constraint (Equation 20)
-    float Taj = (amax / jmax) - Ts;
+    float Tja = (amax / jmax) - Ts;
 
     // Choose the minimum Tj among the constraints
 
@@ -469,35 +473,35 @@ float S4_CurvePlanner::CalculateTj() {
      #ifdef __debug
     SerialUSB.println("*******************************");
     SerialUSB.println("CalculateTj variables: ");
-    SerialUSB.print("Tdj: ");
-    SerialUSB.println(Tdj);
-    SerialUSB.print("Tvj: ");
-    SerialUSB.println(Tvj);
-    SerialUSB.print("Taj: ");
-    SerialUSB.println(Taj);
+    SerialUSB.print("Tjd: ");
+    SerialUSB.println(Tjd);
+    SerialUSB.print("Tjv: ");
+    SerialUSB.println(Tjv);
+    SerialUSB.print("Tja: ");
+    SerialUSB.println(Tja);
     #endif
 
 
-    return std::min({Tdj, Tvj, Taj});
+    Tj = std::min({Tjd, Tjv, Tja});
 
-    if (Tj == ((std::abs(qe - qs) / (4 * jmax)) + (Ts / (27 * std::pow(vmax, 2))) + ((std::abs(qe - qs) * Ts) / (54 * jmax))
-    + ((std::pow(std::abs(qe - qs), 2)) / (16 * std::pow(jmax, 2))) + ((3 * Ts) / (27 * std::pow(vmax, 2))) 
-    - ((std::abs(qe - qs)) / (4 * jmax)))) {
+
+    if (Tj == Tjd) {
         // Case 1: Only varying jerk and constant jerk
-        float am = jmax * (Ts + Tj);
-        float vm = am * (2 * Ts + Tj);
+         am = jmax * (Ts + Tjd);
+         vm = am * ((2 * Ts) + Tj);
 
         #ifdef __debug
         SerialUSB.println("Case 1: Varying jerk and constant jerk");
         SerialUSB.print("Acceleration: ");
-        SerialUSB.print(am);
-        SerialUSB.print("\nVelocity: ");
+        SerialUSB.println(am);
+        SerialUSB.print("Velocity: ");
         SerialUSB.println(vm);
         #endif
 
-    } else if (Tj == ((std::pow(Ts, 2) / (4 * smax)) + (vmax / jmax) - ((3 * std::pow(Ts, 2)) / (2)))) {
+
+    } else if (Tj == Tjv) {
         // Case 2: Maximum velocity reached without max acceleration
-        float am = jmax * (Ts + Tj);
+         am = jmax * (Ts + Tjv);
 
         #ifdef __debug
         SerialUSB.println("Case 2: Maximum velocity reached");
@@ -513,13 +517,17 @@ float S4_CurvePlanner::CalculateTj() {
         SerialUSB.println("Case 3: Calculate other time intervals or motion parameters");
         #endif
         // You can calculate and print remaining motion parameters here
+
     }
+
+    return Tj;
 
 }
 
 
 
 float S4_CurvePlanner::CalculateTa() {
+
     
     // Calculate Tda based on the displacement constraint (Equation 23)
     float Tda = ((3 * std::pow(Tj, 2)) / 2) - (3 * Ts) + ((std::pow(2 * Ts + Tj, 2)) / 4) + (std::abs(qe - qs) / (amax));
