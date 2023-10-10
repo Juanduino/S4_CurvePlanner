@@ -680,11 +680,11 @@ if (t >= t0 && t < t1) {
 
     jerk_now = jmax / T1 * tau1;
 
-    acel_now = (jmax / (2.0f * T1)) * (tau1 * tau1);
+    acel_now = (jmax / (2.0f * T1)) * pow(tau1, 2);
 
-    vel_target  = (jmax / (6.0f * T1)) * (tau1 * tau1 * tau1) + vs;
+    vel_target  = (jmax / (6.0f * T1)) * pow(tau1, 3) + vs;
 
-    pos_target = (jmax / (24.0f * T1)) * (tau1 * tau1 * tau1 * tau1) + (vs * tau1) + qs;
+    pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
 }
 
 if (t >= t1 && t < t2) {
@@ -697,11 +697,11 @@ if (t >= t1 && t < t2) {
 
     v1 = v0 + (jmax / 6.0) * (T1 * T1);   
 
-    vel_target  = (jmax / 2.0) * (tau2 * tau2) + (jmax / 2.0) * T1 * tau2 + v1;
+    vel_target  = (jmax / 2.0) * pow(tau2, 2) + (jmax / 2.0) * T1 * tau2 + v1;
 
     q1 = v0 * T1 + (jmax / 24.0) * (T1 * T1 * T1);
 
-    pos_target = (jmax / 6.0) * (tau2 * tau2 * tau2) + (jmax / 4) * T1 * (tau2 * tau2) + (v1 *tau2) + q1; 
+    pos_target = (jmax / 6.0) * pow(tau2, 3) + (jmax / 4) * T1 * pow(tau2, 2) + (v1 *tau2) + q1; 
 }
 
 if (t >= t2 && t < t3) {
@@ -709,15 +709,15 @@ if (t >= t2 && t < t3) {
     // Code for the [t2, t3] time range
     jerk_now = jmax - (jmax / T3) * tau3;
 
-    acel_now = (jmax * tau3) - (jmax / (2 * T3)) * (tau3 * tau3) + (jmax / 2) * (T1 + (2 * T2));
+    acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
 
     v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
 
-    vel_target  = (jmax / 2.0) * (tau3 * tau3) - (jmax / (6.0 * T3)) * (tau3 * tau3 * tau3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
+    vel_target  = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
 
     q2 = q1 + (jmax / 12.0) * T2 * T2 * (2 * T2 + 3 * T1) + v1 * T2;
 
-    pos_target = (jmax / 6.0) * (tau3 * tau3 * tau3) - (jmax / (6 * T3)) * (tau4 * tau4 * tau4) + (jmax / 4.0) * (T1 + (2 * T2)) * (tau3 * tau3) + (v2 * tau3) + q2; 
+    pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
 }
 
 if (t >= t3 && t < t4) {
@@ -732,9 +732,9 @@ if (t >= t3 && t < t4) {
 
     vel_target  = acel_now * tau4 - v3;
 
-    q3 = q2 + (jmax / 8.0) * (T3 * T3) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
+    q3 = q2 + (jmax / 8.0) * pow(tau5, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
-    pos_target = (amax / 2.0) * (tau4 * tau4) + (v3 * tau4) + q3;
+    pos_target = (amax / 2.0) * pow(tau4, 2) + (v3 * tau4) + q3;
 }
 
 if (t >= t4 && t < t5) {
@@ -743,15 +743,15 @@ if (t >= t4 && t < t5) {
 
     jerk_now = (jmax / T5) * tau5;
 
-    acel_now = - (jmax / (2.0 * T5)) * (tau5 * tau5) + amax;
+    acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
 
     v4 = v3 + (amax * T4);
 
-    vel_target  = - (jmax / (6.0 * T5)) * (tau5 * tau5 * tau5) + (amax * tau5) + v4;
+    vel_target  = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
 
     q4 = q3 + (amax / 2.0) * (tau4 * tau4) + (v3 * T4);
 
-    pos_target = - (jmax / (24.0 * T5)) * (tau5 * tau5 * tau5 * tau5) + (amax / 2.0) * (tau5 * tau5) + q4;
+    pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
 }
 
 if (t >= t5 && t < t6) {
@@ -795,9 +795,9 @@ if (t >= t7 && t < t8) {
     // Code for the [t7, t8] time range
     tau8 = t - t7;
 
-    v7 = v6 - (jmax / (3.0 * T7 * T7)) + (amax - (jmax / (2.0 * T5)) - jmax * T6) * T7;
+    v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
 
-    q7 = q6 - (jmax / (8.0 * T7 * T7 * T7)) + (2.0 * amax - 2.0 * jmax * T5 - 2.0 * jmax * T6) / (4.0 * T7 * T7);
+    q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
     // Use v7 and q7 as needed for further calculations
     // j(t) and a(t) are both 0 within this range
