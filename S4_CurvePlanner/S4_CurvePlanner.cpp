@@ -530,18 +530,18 @@ float S4_CurvePlanner::CalculateTa() {
 
     
     // Calculate Tda based on the displacement constraint (Equation 23)
-    float Tda = ((3 * std::pow(Tj, 2)) / 2) - (3 * Ts) + ((std::pow(2 * Ts + Tj, 2)) / 4) + (std::abs(qe - qs) / (amax));
+    float Tad = ((3 * Tj) / 2) - (3 * Ts) + sqrt(( ((2 * Ts) + Tj) * ((2 * Ts) + Tj) / 4) + (dmax / amax));
 
     // Calculate Tva based on the velocity constraint (Equation 25)
-    float Tva = (vmax / amax) - Tj - (2 * Ts);
+    float Tav = (vmax / amax) - Tj - (2 * Ts);
 
     #ifdef __debug
     SerialUSB.println("*******************************");
     SerialUSB.println("CalculateTa variables: ");
-    SerialUSB.print("Tda: ");
-    SerialUSB.println(Tda);
-    SerialUSB.print("Tva: ");
-    SerialUSB.println(Tva);
+    SerialUSB.print("Tad: ");
+    SerialUSB.println(Tad);
+    SerialUSB.print("Tav: ");
+    SerialUSB.println(Tav);
     #endif
 
     // Choose the minimum Ta among the constraints
@@ -554,7 +554,7 @@ float S4_CurvePlanner::CalculateTa() {
 float S4_CurvePlanner::CalculateTv() {
    
     // Calculate Tv based on the velocity constraint (Equation 27)
-     Tv = (std::abs(qe - qs) / vmax) - (4 * Ts + 2 * Tj + Ta);
+     Tv = (dmax / vmax) - ((4 * Ts) + (2 * Tj) + Ta);
 
     return Tv;
 }
