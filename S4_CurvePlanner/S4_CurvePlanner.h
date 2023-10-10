@@ -11,10 +11,15 @@ public:
     void executeCommand(char *command, char *command2);
     void doGcommandBuffer(char *command);
     void doMCommand(char *command);
-    void linkMotor(StepperMotor*);
+    void linkMotor(FOCMotor*);
     void runPlannerOnTick();
     bool isPlannerMoving();
     void resetTimeVariables();
+
+    //For testing purposes
+    float t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
+    bool calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_);
+    void RuntimePlanner(float currentTrajectoryTime);
 
 private:
     
@@ -41,7 +46,7 @@ private:
     float ta;
     float tv;
 
-    float t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
+    
     float tau1, tau2, tau3, tau4, tau5, tau6, tau7, tau8, tau9, tau10, tau11, tau12, tau13, tau14, tau15;
     float T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15;
     float q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14;
@@ -60,6 +65,9 @@ private:
     float dmax; // Max displacemnt 
     float smax; // MAX snap
 
+    float am, vm;
+
+
     float pos_target;
     float jerk_now;
     float acel_now;
@@ -77,10 +85,10 @@ private:
     float sign(float val);
     float sign_hard(float val);
 
-    bool calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_);
+    
 
     void Initiate_Move(float Pos);
-    void RuntimePlanner(float currentTrajectoryTime);
+    
 
     char* tailItem;
     char* nextItem;
@@ -92,7 +100,7 @@ private:
     float dXmin;
 
     // COSINE PLANNER VARIABLES
-    float t;
+    //float t;
     float desiredAmplitude;
 };
 

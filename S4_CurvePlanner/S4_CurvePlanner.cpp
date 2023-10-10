@@ -9,7 +9,7 @@ S4_CurvePlanner::S4_CurvePlanner(int tickPeriod){
     return;
 }
 
-void S4_CurvePlanner::linkMotor(StepperMotor *motorReference){
+void S4_CurvePlanner::linkMotor(FOCMotor *motorReference){
     motor = motorReference;
 }
 
@@ -28,8 +28,6 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         //SerialUSB.println(MCommand);
     #endif
 
-
-       
       // Parse this string for vals to int
         String commandSrt = String(MCommand);
         int commandValue_Int = 0;
@@ -60,7 +58,6 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
             SerialUSB.println("VELOCITY_MAX:12.5663706144");
             SerialUSB.println("ACCELERATION_MIN:-12.5663706144");
             SerialUSB.println("ACCELERATION_MAX:12.5663706144");
-
 
         }
 
@@ -165,20 +162,14 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
             if (commandValue_Int == 203){
                 // M203
                 // Set maximum feedrate
-
-                //  TODO  TODO TODO TODO
-        //  TODO  TODO TODO TODO
-      
+                //  TODO  TODO TODO
             }
-
           
 
             if (commandValue_Int == 201){
                 // M201
                 // Set maximum acceleration
-
-                //  TODO  TODO TODO TODO
-        //  TODO  TODO TODO TODO
+                //  TODO  TODO TODO
         
             }
 
@@ -186,23 +177,16 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
             if (commandValue_Int == 202){
                 // M202
                 // Set maximum jerk
-
-                //  TODO  TODO TODO TODO
-        //  TODO  TODO TODO TODO
-        
+                //  TODO  TODO TODO 
             }
 
 
             if (commandValue_Int == 205){
                 // M205
                 // Advanced settings
-
-                //  TODO  TODO TODO TODO
-        //  TODO  TODO TODO TODO
+                //  TODO  TODO TODO 
 
             }
-
-            
 
         // Place different if statements like "fetch current position".
 /*
@@ -418,12 +402,12 @@ float S4_CurvePlanner::CalculateTs() {
 
 
     // Step 1: Calculate Ts from displacement constraint
-    
-    float Ts_d = 4 * sqrt(dmax / (8 * smax));
+    float ds_max = dmax / (8 * smax);
+    float Ts_d = pow(ds_max, 0.25f);
 
     // Step 2: Calculate Ts from velocity constraint
     
-    float Ts_v = 4 * sqrt(vmax / (2 * smax));
+    float Ts_v = cbrt(vmax / (2 * smax));
 
     // Step 3: Calculate Ts from acceleration constraint
     
@@ -435,8 +419,8 @@ float S4_CurvePlanner::CalculateTs() {
 
 
     #ifdef __debug
-    SerialUSB.println("*******************************");
-    SerialUSB.println("CalculateTs variables: ");
+    SerialUSB.println("**********************");
+    SerialUSB.println("CalculateTs variables:");
     SerialUSB.print("Ts_d: ");
     SerialUSB.println(Ts_d);
     SerialUSB.print("Ts_v: ");
@@ -448,7 +432,33 @@ float S4_CurvePlanner::CalculateTs() {
     #endif
 
     // Choose the minimum Ts among the constraints
-    return std::min({Ts_d, Ts_v, Ts_a, Ts_j});
+    Ts = min({Ts_d, Ts_v, Ts_a, Ts_j});
+
+    if (Ts == Ts_d){
+
+        jmax = smax * Ts_d;
+        amax = jmax * Ts_d;
+        vmax = (2 * amax) * Ts_d;
+
+        #ifdef __debug
+        SerialUSB.print("jmax: ");
+        SerialUSB.println(jmax);
+        SerialUSB.print("amax: ");
+        SerialUSB.println(amax);
+        SerialUSB.print("vmax: ");
+        SerialUSB.println(vmax);
+        #endif
+
+    }
+
+    if (Ts == Ts_j){
+
+    Tj = CalculateTj();
+
+    }
+
+
+    return Ts;
 
 }
 
@@ -458,8 +468,12 @@ float S4_CurvePlanner::CalculateTj() {
 
     // Calculate Tdj based on the displacement constraint (Equation 16)
 
-    float Tjd = 3 * sqrt((pow(Ts, 3)/27) + (dmax / (4 * jmax)) + sqrt((dmax / (54 * jmax)) + (pow(dmax, 2)/ (16 * pow(jmax, 2))))) 
-    + sqrt((pow(Ts, 3) / 27) + (dmax / (4 * jmax)) - sqrt((dmax * pow(Ts, 3)) / (54 * jmax) + (pow(dmax, 2) / (16 * pow(jmax, 2))))) - ((5 * Ts) / 3); 
+    float c = pow(Ts,3);
+    float d = (dmax * c) / (54.0f * jmax);
+    float e = (dmax * dmax) / (16.0f * jmax * jmax);
+    float a = (c / 27.0f) + (dmax / (4.0f * jmax));
+    float b = sqrt(d + e);
+    float Tjd = cbrt(a + b) + cbrt(a - b) + (5.0f * Ts / 3.0f); 
    
     // Calculate Tvj based on the velocity constraint (Equation 18)
     float Tjv = sqrt((pow(Ts, 2) / 4) + (vmax / jmax) - ((3 * Ts) / 2));
@@ -497,6 +511,7 @@ float S4_CurvePlanner::CalculateTj() {
         SerialUSB.print("Velocity: ");
         SerialUSB.println(vm);
         #endif
+        
 
 
     } else if (Tj == Tjv) {
@@ -509,13 +524,17 @@ float S4_CurvePlanner::CalculateTj() {
         SerialUSB.println(am);
         #endif
 
+        amax = am; 
+
 
         // You can calculate and print remaining motion parameters here
     } else {
         // Case 3: Calculate other time intervals or motion parameters
         #ifdef __debug
-        SerialUSB.println("Case 3: Calculate other time intervals or motion parameters");
+        SerialUSB.println("Case 3: Calculate Ta");
         #endif
+
+        Ta = CalculateTa();
         // You can calculate and print remaining motion parameters here
 
     }
@@ -530,7 +549,7 @@ float S4_CurvePlanner::CalculateTa() {
 
     
     // Calculate Tda based on the displacement constraint (Equation 23)
-    float Tad = ((3 * Tj) / 2) - (3 * Ts) + sqrt(( ((2 * Ts) + Tj) * ((2 * Ts) + Tj) / 4) + (dmax / amax));
+    float Tad = ((3 * Tj) / 2) - (3 * Ts) +     (((((2 * Ts) + Tj) * ((2 * Ts) + Tj)) / 4) + (dmax / amax));
 
     // Calculate Tva based on the velocity constraint (Equation 25)
     float Tav = (vmax / amax) - Tj - (2 * Ts);
@@ -545,7 +564,36 @@ float S4_CurvePlanner::CalculateTa() {
     #endif
 
     // Choose the minimum Ta among the constraints
-    return std::min(Tda, Tva);
+    Ta = std::min({Tad, Tav});
+
+    if (Ta == Tad){
+
+        
+
+         vmax = amax * (Ta + (2 * Ts) + Tj);
+         
+
+          #ifdef __debug
+         SerialUSB.print("CASE 1 :");
+         SerialUSB.println("Trajectory segments with a constant velocity do not exist");
+         SerialUSB.print("real Vmax:");
+         SerialUSB.println(vmax);
+         #endif
+    } 
+
+    if (Ta == Tav){
+
+         #ifdef __debug
+         SerialUSB.print("CASE 2 :");
+         SerialUSB.println("both the maximum acceleration and velocity can reach their maximums");
+         #endif
+
+         Tv = CalculateTv();
+
+    }
+
+    // Choose the minimum Ta among the constraints
+    return Ta, vmax;
 
 }
 
@@ -565,6 +613,8 @@ float S4_CurvePlanner::CalculateTv() {
 
 bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_) {
 
+    
+
 
         
         //Start Position
@@ -574,7 +624,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         qe = Xf;
 
         // Calculate dmax from the displacement constraint
-        dmax = std::abs(qe - qs);
+        dmax = abs(qs - qe);
 
         //Snap max
         smax = Smax_;
@@ -588,6 +638,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         // Velocity max.
         vmax = Vmax_;
 
+        vs = Vi;
+
 
         // Calculate the time intervals using snap
         //Ts = Jmax_ / Smax_;
@@ -595,15 +647,16 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         //Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
         //Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
 
-        // Calculate the time intervals
+        // Calculate the time intervals 
+        // NOTE: Follow flow chart
         Ts = CalculateTs();
-        Tj = CalculateTj();
-        Ta = CalculateTa();
-        Tv = CalculateTv();
+        //Tj = CalculateTj();
+        //Ta = CalculateTa();
+        //Tv = CalculateTv();
 
         #ifdef __debug
-        SerialUSB.println("********************************");
-        SerialUSB.println("S-curve Time-Segment Values:   ");
+        SerialUSB.println("****************************");
+        SerialUSB.println("S-curve Time-Segment Values:");
         SerialUSB.print("Ts: ");
         SerialUSB.println(Ts);
         SerialUSB.print("Tj: ");
@@ -632,7 +685,10 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          t7 = t6 + Ts;
 
         //Constant velocity
+         if (Tv <= 0){ t8 = t7;
+         } else {
          t8 = t7 + Tv;
+         }
 
         // Calculate transition times for deceleration phase (symetrical to acceleration).
          t9 = t8 + Ts;
@@ -645,7 +701,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
 
         #ifdef __debug
-        SerialUSB.println("*************************************");
+        SerialUSB.println("*************************");
         SerialUSB.println("S-curve Transition Times:");
         SerialUSB.print("t1: "); SerialUSB.println(t1);
         SerialUSB.print("t2: "); SerialUSB.println(t2);
@@ -684,7 +740,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         // Print the time intervals
         #ifdef __debug
-        SerialUSB.println("*************************************");
+        SerialUSB.println("********************************");
         SerialUSB.println("Time Duration for each interval: ");
         SerialUSB.print("T1: "); SerialUSB.println(T1);
         SerialUSB.print("T2: "); SerialUSB.println(T2);
@@ -702,10 +758,32 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("T14: "); SerialUSB.println(T14);
         SerialUSB.print("T15: "); SerialUSB.println(T15);
         #endif
+        
+
+        //Calculate Notations
+        v1 = v0 + (jmax / 6.0) * pow(T1, 2); 
+        q1 = (v0 * T1) + (jmax / 24.0) * pow(T1, 3);
+
+        v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
+        q2 = q1 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
+
+        v3 = v2 + ((jmax / 6.0) * T3) * ((3 * T1) + (6 * T2) + (2 * T3));
+        q3 = q2 + (jmax / 8.0) * pow(T3, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
+
+        v4 = v3 + (amax * T4);
+        q4 = q3 + (jmax / 2.0) * pow(T4, 2) + (v3 * T4);
+
+        v5 = v4 - (amax / 6.0) * pow(T5, 2) + (amax * T5);
+        q5 = q4 - ((jmax / 24.0) * pow(T5, 3)) + ((amax / 2.0) * pow(T5, 2)) + (v4 * T5);
+
+        v6 = v5 - ((jmax / 2.0) * pow(T6, 2)) + ((amax - (jmax / 2.0) * T5) * T6);
+        q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + (v5 * T6);
+        
+        v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
+        q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
 
-
-    return true;
+        return true;
 }
 
 
@@ -772,12 +850,13 @@ float S4_CurvePlanner::findTf(float Ts, float Tj, float Ta, float Tv, float Td) 
 
 
 
-void S4_CurvePlanner::RuntimePlanner(float currentTrajectoryTime) {
+void S4_CurvePlanner::RuntimePlanner(float t) {
     
      //float currentTrajectoryTime = (millis() - plannerStartingMov
   
 if (t >= t0 && t < t1) {
     // Code for the [t0, t1] time range
+
     tau1 = t - t0;
 
     jerk_now = jmax / T1 * tau1;
@@ -787,7 +866,7 @@ if (t >= t0 && t < t1) {
     vel_target = (jmax / (6.0f * T1)) * pow(tau1, 3) + vs;
 
     pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
-
+    
   
     #ifdef __debug
     SerialUSB.print("tau1:");
@@ -816,12 +895,8 @@ if (t >= t1 && t < t2) {
     jerk_now = jmax;
 
     acel_now = jmax * tau2 + (jmax / 2.0) * T1;
-
-    v1 = v0 + (jmax / 6.0) * (T1 * T1);   
-
+  
     vel_target = (jmax / 2.0) * pow(tau2, 2) + (jmax / 2.0) * T1 * tau2 + v1;
-
-    q1 = v0 * T1 + (jmax / 24.0) * (T1 * T1 * T1);
 
     pos_target = (jmax / 6.0) * pow(tau2, 3) + (jmax / 4) * T1 * pow(tau2, 2) + (v1 *tau2) + q1; 
 
@@ -855,11 +930,7 @@ if (t >= t2 && t < t3) {
 
     acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
 
-    v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
-
     vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
-
-    q2 = q1 + (jmax / 12.0) * T2 * T2 * (2 * T2 + 3 * T1) + v1 * T2;
 
     pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
 
@@ -892,11 +963,7 @@ if (t >= t3 && t < t4) {
 
     acel_now = amax;
 
-    v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
-
-    vel_target = acel_now * tau4 - v3;
-
-    q3 = q2 + (jmax / 8.0) * pow(tau5, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
+    vel_target = amax * tau4 - v3;
 
     pos_target = (amax / 2.0) * pow(tau4, 2) + (v3 * tau4) + q3;
 
@@ -924,15 +991,11 @@ if (t >= t4 && t < t5) {
     // Code for the [t4, t5] time range
     tau5 = t - t4;
 
-    jerk_now = (jmax / T5) * tau5;
+    jerk_now = - (jmax / T5) * tau5;
 
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
 
-    v4 = v3 + (amax * T4);
-
     vel_target = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
-
-    q4 = q3 + (amax / 2.0) * (tau4 * tau4) + (v3 * T4);
 
     pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
 
@@ -964,13 +1027,9 @@ if (t >= t5 && t < t6) {
 
     acel_now = -jmax * tau6 + amax - (jmax / (2.0 * T5)) * tau5;
 
-    v5 = v4 - (amax / (6.0 * T5 * T5)) + amax * T5;
+    vel_target =  (-jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * tau5) * tau6 + v5;
 
-    vel_target = - (jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * tau5) * tau6 + v5;
-
-    q5 = q4 - (jmax / (24.0 * T5 * T5 * T5)) + (amax / (2.0 * T5 * T5)) + v4 * T5;
-
-    pos_target = - (jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
+    pos_target = (-jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
 
     
     #ifdef __debug
@@ -997,18 +1056,14 @@ if (t >= t6 && t < t7) {
     // Code for the [t6, t7] time range
     tau7 = t - t6;
 
-    jerk_now = -jmax + (jmax / T7) * tau7;
+    jerk_now = -jmax + ((jmax / T7) * tau7);
 
-    acel_now = -jmax * tau7 + (jmax / (2.0 * T7)) * pow(tau7, 2) + amax - (jmax / (2.0 * T5)) - jmax * T6;
+    acel_now = -(jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
 
-    v6 = v5 - (jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * T5) * T6;
+    vel_target = (-(jmax / 2.0) * pow(tau7, 2)) + ((jmax / (6.0 * T7)) * pow(tau7, 3)) + ((amax - (jmax / (2.0 * T5)) - (jmax * T7)) * tau7) + v6;
 
-    vel_target = -(jmax / (2.0 * pow(tau7, 2))) + (jmax / (6.0 * T7 * pow(tau7, 3))) + (amax - (jmax / (2.0 * T5)) - jmax * T7) * tau7 + v6;
-
-    q6 = q5 - (jmax / (24.0 * T7 * pow(tau7, 4))) + ((2.0 * amax - jmax * T5 - 2.0 * jmax * T1) / (4.0 * pow(tau7, 2))) + v6 * tau7;
-
-    pos_target = (-jmax / 6.0) * pow(tau7, 3) - (jmax / (24 * T7)) * pow(tau7, 4) + (((2 * amax) - (jmax * T5) - ((2 * jmax) * T1)) / 4) * pow(tau7, 2) + (v6 * tau7) + q6;
-
+    pos_target = (-(jmax / 6.0) * pow(tau7, 3)) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - (jmax * T5) - ((2 * jmax) * T1)) / 4) * pow(tau7, 2) + (v6 * tau7) + q6;
+ 
 
     
     #ifdef __debug
@@ -1034,10 +1089,6 @@ if (t >= t6 && t < t7) {
 if (t >= t7 && t < t8) {
     // Code for the [t7, t8] time range
     tau8 = t - t7;
-
-    v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
-
-    q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
     // Use v7 and q7 as needed for further calculations
     // j(t) and a(t) are both 0 within this range
