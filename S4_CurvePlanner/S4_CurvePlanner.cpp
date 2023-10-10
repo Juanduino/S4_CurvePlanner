@@ -512,14 +512,24 @@ float S4_CurvePlanner::CalculateTv() {
     return Tv;
 }
 
+
+//ChatGPT: "So, the two sets of code do not give the same result, as they use different equations and constraints to calculate the time intervals. 
+//The choice of which set of equations to use depends on your specific requirements and constraints for trajectory planning."
+
 bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vmax, float Amax, float Dmax, float Jmax, float Smax) {
 
 
+        // Calculate the time intervals using snap
+        //Ts = Jmax_ / Smax_;
+        //Tj = Amax_ / Jmax_ - Ts;
+        //Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
+        //Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
+
         // Calculate the time intervals
-        Ts = Jmax_ / Smax_;
-        Tj = Amax_ / Jmax_ - Ts;
-        Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
-        Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
+        Ts = CalculateTs();
+        Tj = CalculateTj();
+        Ta = CalculateTa();
+        Tv = CalculateTv();
 
         // Calculate the maximum motion parameters
         jmax = Smax_ * Ts;
@@ -527,11 +537,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         vmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta);
         dmax = Smax_ * Ts * (Ts + Tj) * (2 * Ts + Tj + Ta) * (4 * Ts + 2 * Tj + Ta + Tv);
 
-        // Calculate the time intervals
-        Ts = CalculateTs();
-        Tj = CalculateTj();
-        Ta = CalculateTa();
-        Tv = CalculateTv();
 
         // Calculate transition times for acceleration phase, using Ts (varying jerk), Tj (constant jerk), and Tv(constant velocity - aka cruice)
          t1 = Ts;
@@ -545,7 +550,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         //Constant velocity
          t8 = t7 + Tv;
 
-        // Calculate transition times for deceleration phase
+        // Calculate transition times for deceleration phase (symetrical to acceleration).
          t9 = t8 + Ts;
          t10 = t9 + Tj;
          t11 = t10 + Ts;
@@ -671,166 +676,139 @@ void S4_CurvePlanner::RuntimePlanner(float currentTrajectoryTime) {
   
 if (t >= t0 && t < t1) {
     // Code for the [t0, t1] time range
-    float jerk = jmax / T1 * tau1;
-    float acceleration = (jmax / (2.0f * T1)) * (tau1 * tau1);
-    float velocity = (jmax / (6.0f * T1)) * (tau1 * tau1 * tau1) + vs;
-    float position = (jmax / (24.0f * T1)) * (tau1 * tau1 * tau1 * tau1) + (vs * tau1) + qs;
+    tau1 = t - t0;
+
+    jerk_now = jmax / T1 * tau1;
+
+    acel_now = (jmax / (2.0f * T1)) * (tau1 * tau1);
+
+    vel_target  = (jmax / (6.0f * T1)) * (tau1 * tau1 * tau1) + vs;
+
+    pos_target = (jmax / (24.0f * T1)) * (tau1 * tau1 * tau1 * tau1) + (vs * tau1) + qs;
 }
 
 if (t >= t1 && t < t2) {
     // Code for the [t1, t2] time range
-    float jerk = jmax;
-    float acceleration = (jmax * tau2) + (jmax / 2.0) * T1;
-    float v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
-    float velocity = (jmax / 2.0) * (tau2 * tau2 * tau2 - (jmax / (6.0 * T3)) * tau2 * tau2 * tau2 * tau2 + (jmax / 2.0) * (T1 + 2 * T2) * tau2) + v2;
-    float q2 = q1 + (jmax / 12.0) * T2 * T2 * (2 * T2 + 3 * T1) + v1 * T2;
-    float position = (jmax / 6.0) * (tau2 * tau2 * tau2 * tau2 - (jmax / (6 * T3)) * tau2 * tau2 * tau2 * tau2 * tau2 * tau2 + (jmax / 4.0) * (T1 + 2 * T2) * (tau2 * tau2) + v2 * tau2 + q2); 
+    tau2 = t - t1;
+
+    jerk_now = jmax;
+
+    acel_now = jmax * tau2 + (jmax / 2.0) * T1;
+
+    v1 = v0 + (jmax / 6.0) * (T1 * T1);   
+
+    vel_target  = (jmax / 2.0) * (tau2 * tau2) + (jmax / 2.0) * T1 * tau2 + v1;
+
+    q1 = v0 * T1 + (jmax / 24.0) * (T1 * T1 * T1);
+
+    pos_target = (jmax / 6.0) * (tau2 * tau2 * tau2) + (jmax / 4) * T1 * (tau2 * tau2) + (v1 *tau2) + q1; 
 }
 
 if (t >= t2 && t < t3) {
+    tau3 = t - t2;
     // Code for the [t2, t3] time range
-    float jerk = jmax - (jmax / T3) * tau3;
-    float acceleration = jmax * tau3 - (jmax / (2 * T3)) * tau3 * tau3 + (jmax / (2 * (T1 + 2 * T2)));
-    float v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
-    float velocity = (jmax / 2.0) * (tau3 * tau3 * tau3 - (jmax / (6.0 * T3)) * tau3 * tau3 * tau3 * tau3 + (jmax / 2.0) * (T1 + 2 * T2) * tau3) + v2;
-    float q2 = q1 + (jmax / 12.0) * T2 * T2 * (2 * T2 + 3 * T1) + v1 * T2;
-    float position = (jmax / 6.0) * (tau3 * tau3 * tau3 * tau3 - (jmax / (6 * T3)) * tau3 * tau3 * tau3 * tau3 * tau3 * tau3 + (jmax / 4.0) * (T1 + 2 * T2) * (tau3 * tau3) + v2 * tau3 + q2); 
+    jerk_now = jmax - (jmax / T3) * tau3;
+
+    acel_now = (jmax * tau3) - (jmax / (2 * T3)) * (tau3 * tau3) + (jmax / 2) * (T1 + (2 * T2));
+
+    v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
+
+    vel_target  = (jmax / 2.0) * (tau3 * tau3) - (jmax / (6.0 * T3)) * (tau3 * tau3 * tau3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
+
+    q2 = q1 + (jmax / 12.0) * T2 * T2 * (2 * T2 + 3 * T1) + v1 * T2;
+
+    pos_target = (jmax / 6.0) * (tau3 * tau3 * tau3) - (jmax / (6 * T3)) * (tau4 * tau4 * tau4) + (jmax / 4.0) * (T1 + (2 * T2)) * (tau3 * tau3) + (v2 * tau3) + q2; 
 }
 
 if (t >= t3 && t < t4) {
     // Code for the [t3, t4] time range
-    float jerk = 0.0;
-    float acceleration = amax;
-    float v3 = v2 + (jmax / 6.0) * T3 * (3 * T1 + 6 * T2 + 2 * T3);
-    float velocity = acceleration * tau4 - v3;
-    float q3 = q2 + (jmax / 8.0) * T3 * T3 * (2 * T2 + 4 * T2 + T3) + v2 * T3;
-    float position = (amax / 2.0) * (tau4 * tau4) + v3 * tau4 + q3;
+    tau4 = t - t3;
+
+    jerk_now = 0.0;
+
+    acel_now = amax;
+
+    v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
+
+    vel_target  = acel_now * tau4 - v3;
+
+    q3 = q2 + (jmax / 8.0) * (T3 * T3) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
+
+    pos_target = (amax / 2.0) * (tau4 * tau4) + (v3 * tau4) + q3;
 }
 
 if (t >= t4 && t < t5) {
     // Code for the [t4, t5] time range
-    float jerk = (jmax / T5) * (tau5 * tau5 * tau5 * tau5 * tau5);
-    float acceleration = - (jmax / (2.0 * T5)) * (tau5 * tau5) + amax;
-    float v4 = v3 + amax * T4;
-    float velocity = - (jmax / (6.0 * T5)) * (tau5 * tau5 * tau5) + (amax * tau5) + v4;
-    float q4 = q3 + (amax / 2.0) * (tau5 * tau5) + v3 * T4;
-    float position = - (jmax / (24.0 * T5)) * (tau5 * tau5 * tau5 * tau5) + (amax / 2.0) * (tau5 * tau5) + q4;
+    tau5 = t - t4;
+
+    jerk_now = (jmax / T5) * tau5;
+
+    acel_now = - (jmax / (2.0 * T5)) * (tau5 * tau5) + amax;
+
+    v4 = v3 + (amax * T4);
+
+    vel_target  = - (jmax / (6.0 * T5)) * (tau5 * tau5 * tau5) + (amax * tau5) + v4;
+
+    q4 = q3 + (amax / 2.0) * (tau4 * tau4) + (v3 * T4);
+
+    pos_target = - (jmax / (24.0 * T5)) * (tau5 * tau5 * tau5 * tau5) + (amax / 2.0) * (tau5 * tau5) + q4;
 }
 
 if (t >= t5 && t < t6) {
+    
     // Code for the [t5, t6] time range
-    float tau6 = t - t5;
-    float jerk = -jmax;
-    float acceleration = -jmax * tau6 + amax - (jmax / (2.0 * T5)) * tau5;
-    float v5 = v4 - (amax / (6.0 * T5 * T5)) + amax * T5;
-    float velocity = - (jmax / 2.0) * (tau6 * tau6) + (amax - (jmax / 2.0) * tau5) * tau6 + v5;
-    float q5 = q4 - (jmax / (24.0 * T5 * T5 * T5)) + (amax / (2.0 * T5 * T5)) + v4 * T5;
-    float position = - (jmax / 6.0) * (tau6 * tau6 * tau6) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * (tau6 * tau6)) + v5 * tau6 + q5;
+    tau6 = t - t5;
+    
+    jerk_now = -jmax;
+
+    acel_now = -jmax * tau6 + amax - (jmax / (2.0 * T5)) * tau5;
+
+    v5 = v4 - (amax / (6.0 * T5 * T5)) + amax * T5;
+
+    vel_target  = - (jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * tau5) * tau6 + v5;
+
+    q5 = q4 - (jmax / (24.0 * T5 * T5 * T5)) + (amax / (2.0 * T5 * T5)) + v4 * T5;
+
+    pos_target = - (jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
 }
 
 if (t >= t6 && t < t7) {
     // Code for the [t6, t7] time range
-    float tau7 = t - t6;
-    float jerk = -jmax + (jmax / T7) * tau7;
-    float acceleration = -jmax * tau7 + (jmax / (2.0 * T7)) * (tau7 * tau7) + amax - (jmax / (2.0 * T5)) - jmax * T6;
-    float v6 = v5 - (jmax / (2.0 * T6 * T6)) + (amax - (jmax / (2.0 * T5))) * T6;
-    float velocity = -(jmax / (2.0 * (tau7 * tau7))) + (jmax / (6.0 * T7 * (tau7 * tau7 * tau7))) +
-                     (amax - (jmax / (2.0 * T5)) - jmax * T7) * tau7 + v6;
-    float q6 = q5 - (jmax / (24.0 * T7 * (tau7 * tau7 * tau7 * tau7))) +
-               ((2.0 * amax - jmax * T5 - 2.0 * jmax * T1) / (4.0 * (tau7 * tau7))) + v6 * tau7;
+    tau7 = t - t6;
+
+    jerk_now = -jmax + (jmax / T7) * tau7;
+
+    acel_now = -jmax * tau7 + (jmax / (2.0 * T7)) * pow(tau7, 2) + amax - (jmax / (2.0 * T5)) - jmax * T6;
+
+    v6 = v5 - (jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * T5) * T6;
+
+    vel_target  = -(jmax / (2.0 * pow(tau7, 2))) + (jmax / (6.0 * T7 * pow(tau7, 3))) + (amax - (jmax / (2.0 * T5)) - jmax * T7) * tau7 + v6;
+
+    q6 = q5 - (jmax / (24.0 * T7 * pow(tau7, 4))) + ((2.0 * amax - jmax * T5 - 2.0 * jmax * T1) / (4.0 * pow(tau7, 2))) + v6 * tau7;
+
+    pos_target = (-jmax / 6.0) * pow(tau7, 3) - (jmax / (24 * T7)) * pow(tau7, 4) + (((2 * amax) - (jmax * T5) - ((2 * jmax) * T1)) / 4) * pow(tau7, 2) + (v6 * tau7) + q6;
+
+
 }
 
 if (t >= t7 && t < t8) {
     // Code for the [t7, t8] time range
-    float v7 = v6 - (jmax / (3.0 * T7 * T7)) + (amax - (jmax / (2.0 * T5)) - jmax * T6) * T7;
-    float q7 = q6 - (jmax / (8.0 * T7 * T7 * T7)) + (2.0 * amax - 2.0 * jmax * T5 - 2.0 * jmax * T6) / (4.0 * T7 * T7);
+    tau8 = t - t7;
+
+    v7 = v6 - (jmax / (3.0 * T7 * T7)) + (amax - (jmax / (2.0 * T5)) - jmax * T6) * T7;
+
+    q7 = q6 - (jmax / (8.0 * T7 * T7 * T7)) + (2.0 * amax - 2.0 * jmax * T5 - 2.0 * jmax * T6) / (4.0 * T7 * T7);
+
     // Use v7 and q7 as needed for further calculations
     // j(t) and a(t) are both 0 within this range
-    float jerk = 0.0;
-    float acceleration = 0.0;
-    float velocity = v7;
-    float position = v7 * tau8 + q7;
+    jerk_now = 0.0;
+
+    acel_now = 0.0;
+
+    vel_target = v7;
+
+    pos_target = v7 * tau8 + q7;
 }
-
-if (t >= t8 && t < t9) {
-    // Code for the [t8, t9] time range
-    float tau9 = t - t8;
-    float jerk = jmax - (jmax / T9) * tau9;
-    float acceleration = jmax * tau9 - (jmax / (2 * T9)) * tau9 * tau9 + (jmax / (2 * (T1 + 2 * T2)));
-    float v8 = v7 + (jmax / 2.0) * T8 * (T1 + T2 + T3 + T4 + T5 + T6 + T7);
-    float velocity = (jmax / 2.0) * (tau9 * tau9 * tau9 - (jmax / (6.0 * T9)) * tau9 * tau9 * tau9 * tau9 + (jmax / 2.0) * (T1 + 2 * T2 + 2 * T3 + 2 * T4 + 2 * T5 + 2 * T6 + T7) * tau9) + v8;
-    float q8 = q7 + (jmax / 12.0) * T8 * T8 * (2 * (T1 + T2 + T3 + T4 + T5 + T6) + T7) + v7 * T8;
-    float position = (jmax / 6.0) * (tau9 * tau9 * tau9 * tau9 - (jmax / (6 * T9)) * tau9 * tau9 * tau9 * tau9 * tau9 * tau9 + (jmax / 4.0) * (T1 + 2 * T2 + 2 * T3 + 2 * T4 + 2 * T5 + 2 * T6 + T7) * (tau9 * tau9) + v8 * tau9 + q8);
-}
-
-if (t >= t9 && t < t10) {
-    // Code for the [t9, t10] time range
-    float jerk = (jmax / T10) * (tau10 * tau10 * tau10 * tau10 * tau10);
-    float acceleration = - (jmax / (2.0 * T10)) * (tau10 * tau10) + amax;
-    float v9 = v8 + amax * T9;
-    float velocity = - (jmax / (6.0 * T10)) * (tau10 * tau10 * tau10) + (amax * tau10) + v9;
-    float q9 = q8 + (amax / 2.0) * (tau10 * tau10) + v8 * T9;
-    float position = - (jmax / (24.0 * T10)) * (tau10 * tau10 * tau10 * tau10 * tau10) + (amax / 2.0) * (tau10 * tau10) + q9;
-}
-
-if (t >= t10 && t < t11) {
-    // Code for the [t10, t11] time range
-    float tau11 = t - t10;
-    float jerk = -jmax;
-    float acceleration = -jmax * tau11 + amax - (jmax / (2.0 * T10)) * tau10;
-    float v10 = v9 - (amax / (6.0 * T10 * T10)) + amax * T10;
-    float velocity = - (jmax / 2.0) * (tau11 * tau11) + (amax - (jmax / 2.0) * tau10) * tau11 + v10;
-    float q10 = q9 - (jmax / (24.0 * T10 * T10 * T10)) + (amax / (2.0 * T10 * T10)) + v9 * T10;
-    float position = - (jmax / 6.0) * (tau11 * tau11 * tau11) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau10) * (tau11 * tau11)) + v10 * tau11 + q10;
-}
-
-if (t >= t11 && t < t12) {
-    // Code for the [t11, t12] time range
-    float tau12 = t - t11;
-    float jerk = -jmax + (jmax / T12) * tau12;
-    float acceleration = -jmax * tau12 + (jmax / (2.0 * T12)) * (tau12 * tau12) + amax - (jmax / (2.0 * T10)) - jmax * T11;
-    float v11 = v10 - (jmax / (2.0 * T11 * T11)) + (amax - (jmax / (2.0 * T10))) * T11;
-    float velocity = -(jmax / (2.0 * (tau12 * tau12))) + (jmax / (6.0 * T12 * (tau12 * tau12 * tau12))) +
-                     (amax - (jmax / (2.0 * T10)) - jmax * T12) * tau12 + v11;
-    float q11 = q10 - (jmax / (24.0 * T12 * (tau12 * tau12 * tau12 * tau12))) +
-               ((2.0 * amax - jmax * T10 - 2.0 * jmax * T1) / (4.0 * (tau12 * tau12))) + v11 * tau12;
-}
-
-if (t >= t12 && t < t13) {
-    // Code for the [t12, t13] time range
-    float tau13 = t - t12;
-    float jerk = -jmax + (jmax / T13) * tau13;
-    float acceleration = -jmax * tau13 + (jmax / (2.0 * T13)) * (tau13 * tau13) + amax - (jmax / (2.0 * T10)) - jmax * T11;
-    float v12 = v11 - (jmax / (2.0 * T11 * T11)) + (amax - (jmax / (2.0 * T10))) * T11;
-    float velocity = -(jmax / (2.0 * (tau13 * tau13))) + (jmax / (6.0 * T13 * (tau13 * tau13 * tau13))) +
-                     (amax - (jmax / (2.0 * T10)) - jmax * T13) * tau13 + v12;
-    float q12 = q11 - (jmax / (24.0 * T13 * (tau13 * tau13 * tau13 * tau13))) +
-               ((2.0 * amax - jmax * T10 - 2.0 * jmax * T1) / (4.0 * (tau13 * tau13))) + v12 * tau13;
-}
-
-if (t >= t13 && t < t14) {
-    // Code for the [t13, t14] time range
-    float tau14 = t - t13;
-    float jerk = (jmax / T14) * (tau14 * tau14 * tau14 * tau14 * tau14);
-    float acceleration = - (jmax / (2.0 * T14)) * (tau14 * tau14) + amax;
-    float v13 = v12 + amax * T13;
-    float velocity = - (jmax / (6.0 * T14)) * (tau14 * tau14 * tau14) + (amax * tau14) + v13;
-    float q13 = q12 + (amax / 2.0) * (tau14 * tau14) + v12 * T13;
-    float position = - (jmax / (24.0 * T14)) * (tau14 * tau14 * tau14 * tau14 * tau14) + (amax / 2.0) * (tau14 * tau14) + q13;
-}
-
-if (t >= t14 && t < t15) {
-    // Code for the [t14, t15] time range
-    float tau15 = t - t14;
-    float jerk = -jmax;
-    float acceleration = -jmax * tau15 + amax - (jmax / (2.0 * T14)) * tau14;
-    float v14 = v13 - (jmax / (2.0 * T14 * T14)) + (amax - (jmax / (2.0 * T10))) * T14;
-    float velocity = - (jmax / 2.0) * (tau15 * tau15) + (amax - (jmax / 2.0) * tau14) * tau15 + v14;
-    float q14 = q13 - (jmax / (24.0 * T14 * T14 * T14)) + (amax / (2.0 * T14 * T14)) + v13 * T14;
-    float position = - (jmax / 6.0) * (tau15 * tau15 * tau15) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau14) * (tau15 * tau15)) + v14 * tau15 + q14;
-}
-
-
 
 
 }
