@@ -21,6 +21,10 @@ float mapfloat(float x, float in_min, float in_max, float out_min, float out_max
      return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+float mapfloat_dec(float x, float in_min, float in_max, float out_min, float out_max){ 
+     return (x - in_max) * (out_max - out_min) / (in_min - in_max) + out_min;
+}
+
 
 void S4_CurvePlanner::doMCommand(char *MCommand){
   #ifdef __debug
@@ -402,12 +406,22 @@ float S4_CurvePlanner::CalculateTs() {
 
 
     // Step 1: Calculate Ts from displacement constraint
+    
+    SerialUSB.print("smax: ");
+    SerialUSB.println(smax);
+
+
     float ds_max = dmax / (8 * smax);
+
     float Ts_d = pow(ds_max, 0.25f);
+
+    //vmax = (2 * pow(Ts, 3)) * smax; 
 
     // Step 2: Calculate Ts from velocity constraint
     
     float Ts_v = cbrt(vmax / (2 * smax));
+
+    //amax = pow(Ts, 2) * smax;
 
     // Step 3: Calculate Ts from acceleration constraint
     
@@ -422,17 +436,40 @@ float S4_CurvePlanner::CalculateTs() {
     SerialUSB.println("**********************");
     SerialUSB.println("CalculateTs variables:");
     SerialUSB.print("Ts_d: ");
-    SerialUSB.println(Ts_d);
+    SerialUSB.println(Ts_d, 8);
     SerialUSB.print("Ts_v: ");
-    SerialUSB.println(Ts_v);
+    SerialUSB.println(Ts_v, 8);
     SerialUSB.print("Ts_a: ");
-    SerialUSB.println(Ts_a);
+    SerialUSB.println(Ts_a, 8);
     SerialUSB.print("Ts_j: ");
-    SerialUSB.println(Ts_j);
+    SerialUSB.println(Ts_j, 8);
     #endif
 
     // Choose the minimum Ts among the constraints
-    Ts = min({Ts_d, Ts_v, Ts_a, Ts_j});
+   if  (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
+    Ts = min({Ts_d, Ts_v, Ts_a});
+   }
+
+   if (Ts_d <= 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
+    Ts = min({Ts_v, Ts_a, Ts_j});
+   }
+
+   if (Ts_d <= 0.0f && Ts_v <= 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
+    Ts = min({Ts_a, Ts_j});
+   }
+   
+   if (Ts_d > 0.0f && Ts_v <= 0.0f && Ts_a <= 0.0f && Ts_j > 0.0f){
+    Ts = min({Ts_d, Ts_j});
+   }
+
+   if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
+    Ts = min({Ts_d, Ts_v});
+   }
+    
+
+    //smax = abs(dmax) / (8 * pow(Ts, 4));
+
+
 
     if (Ts == Ts_d){
 
@@ -451,11 +488,72 @@ float S4_CurvePlanner::CalculateTs() {
 
     }
 
-    if (Ts == Ts_j){
+     if (Ts == Ts_v){
 
-    Tj = CalculateTj();
+        if (Ts_v == Ts_a) {
+            Ts_a = 0;    }
+
+        //smax = abs(vmax) / (2 * pow(Ts_v, 3));
+        jmax = smax * Ts_v;
+        amax = jmax * Ts_v; 
+        #ifdef __debug
+        SerialUSB.print("jmax: ");
+        SerialUSB.println(jmax);
+        SerialUSB.print("amax: ");
+        SerialUSB.println(amax);
+        SerialUSB.print("vmax: ");
+        SerialUSB.println(vmax);
+         SerialUSB.print("smax: ");
+        SerialUSB.println(smax);
+        #endif
+       
+
+         CalculateTv();
 
     }
+
+     if (Ts == Ts_a){
+     
+       
+       
+        jmax = smax * Ts_a;
+        
+        #ifdef __debug
+        SerialUSB.print("jmax: ");
+        SerialUSB.println(jmax);
+        SerialUSB.print("amax: ");
+        SerialUSB.println(amax);
+        SerialUSB.print("vmax: ");
+        SerialUSB.println(vmax);
+         SerialUSB.print("smax: ");
+        SerialUSB.println(smax);
+        #endif
+       
+
+         CalculateTa();
+
+         
+
+    }
+
+    if (Ts == Ts_j){
+
+        #ifdef __debug
+        SerialUSB.print("jmax: ");
+        SerialUSB.println(jmax);
+        SerialUSB.print("amax: ");
+        SerialUSB.println(amax);
+        SerialUSB.print("vmax: ");
+        SerialUSB.println(vmax);
+         SerialUSB.print("smax: ");
+        SerialUSB.println(smax);
+        #endif
+
+        Tj = CalculateTj();
+
+    }
+
+   
 
 
     return Ts;
@@ -468,6 +566,8 @@ float S4_CurvePlanner::CalculateTj() {
 
     // Calculate Tdj based on the displacement constraint (Equation 16)
 
+    
+
     float c = pow(Ts,3);
     float d = (dmax * c) / (54.0f * jmax);
     float e = (dmax * dmax) / (16.0f * jmax * jmax);
@@ -475,11 +575,14 @@ float S4_CurvePlanner::CalculateTj() {
     float b = sqrt(d + e);
     float Tjd = cbrt(a + b) + cbrt(a - b) + (5.0f * Ts / 3.0f); 
    
+    //vmax = jmax * (2 * pow(Ts, 2) + ((3 * Ts) * Tjd) + pow(Tjd, 2));
     // Calculate Tvj based on the velocity constraint (Equation 18)
-    float Tjv = sqrt((pow(Ts, 2) / 4) + (vmax / jmax) - ((3 * Ts) / 2));
+    float Tjv = sqrt((pow(Ts, 2) / 4) + (abs(vmax) / jmax) - ((3 * Ts) / 2));
+
+    //amax = jmax * (Ts + Tjv);
 
     // Calculate Taj based on the acceleration constraint (Equation 20)
-    float Tja = (amax / jmax) - Ts;
+    float Tja = (abs(amax) / jmax) - Ts;
 
     // Choose the minimum Tj among the constraints
 
@@ -495,14 +598,35 @@ float S4_CurvePlanner::CalculateTj() {
     SerialUSB.println(Tja);
     #endif
 
+    if (Tjd > 0.0f && Tjv > 0.0f && Tja > 0.0f){
 
-    Tj = std::min({Tjd, Tjv, Tja});
+         Tj = min({Tjd, Tjv, Tja});
 
+    }
 
+    if (Tjd <= 0.0f && Tjv > 0.0f && Tja > 0.0f){
+
+        Tj = min({Tjv, Tja});
+    }
+
+     if (Tjd > 0.0f && Tjv <= 0.0f && Tja > 0.0f){
+
+        Tj = min({Tjd, Tja});
+    }
+
+    if (Tjd > 0.0f && Tjv > 0.0f && Tja <= 0.0f){
+
+        Tj = min({Tjd, Tjv});
+    }
+    
+
+    //jmax = abs(dmax) / (8 * pow(Ts, 3) + (16 * pow(Ts, 2) * Tj) + ((10 * Ts) * pow(Tj, 2)) + (2 * pow(Tj, 3 )));
+    //vmax = jmax * ((2 * pow(Ts, 2)) + ((3*Ts) * Tj) + pow(Tj, 2));
+  
     if (Tj == Tjd) {
         // Case 1: Only varying jerk and constant jerk
-         am = jmax * (Ts + Tjd);
-         vm = am * ((2 * Ts) + Tj);
+         amax = jmax * (Ts + Tjd);
+         vmax = am * ((2 * Ts) + Tj);
 
         #ifdef __debug
         SerialUSB.println("Case 1: Varying jerk and constant jerk");
@@ -515,16 +639,24 @@ float S4_CurvePlanner::CalculateTj() {
 
 
     } else if (Tj == Tjv) {
+
         // Case 2: Maximum velocity reached without max acceleration
          am = jmax * (Ts + Tjv);
+
+         amax = am; 
 
         #ifdef __debug
         SerialUSB.println("Case 2: Maximum velocity reached");
         SerialUSB.print("Acceleration: ");
-        SerialUSB.println(am);
+        SerialUSB.println(amax);
+        SerialUSB.print("dmax: ");
+        SerialUSB.println(dmax);
+        SerialUSB.print("jmax: ");
+        SerialUSB.println(jmax);
         #endif
 
-        amax = am; 
+
+        CalculateTv();
 
 
         // You can calculate and print remaining motion parameters here
@@ -547,9 +679,13 @@ float S4_CurvePlanner::CalculateTj() {
 
 float S4_CurvePlanner::CalculateTa() {
 
+
+
     
     // Calculate Tda based on the displacement constraint (Equation 23)
     float Tad = ((3 * Tj) / 2) - (3 * Ts) +     (((((2 * Ts) + Tj) * ((2 * Ts) + Tj)) / 4) + (dmax / amax));
+
+    //vmax = amax * (Ta + (2 * Ts) + Tj);
 
     // Calculate Tva based on the velocity constraint (Equation 25)
     float Tav = (vmax / amax) - Tj - (2 * Ts);
@@ -564,15 +700,24 @@ float S4_CurvePlanner::CalculateTa() {
     #endif
 
     // Choose the minimum Ta among the constraints
-    Ta = std::min({Tad, Tav});
+
+    if (Tad > 0.0f && Tav > 0.0f){
+    Ta = min({Tad, Tav});
+    }
+
+     if (Tad > 0.0f && Tav <= 0.0f){
+    Ta = Tad;
+    }
+
+    if (Tad <= 0.0f && Tav > 0.0f){
+    Ta = Tav;
+    }
+
+    //amax = abs(dmax) / (8 * pow(Ta, 2) + ((3 * Ta) * Tj) + ((6 * Ts) * Ta) + (8 * pow(Ts, 2)) + (2 * pow(Tj, 2)) + ((8 * Ts) * Tj));
 
     if (Ta == Tad){
 
-        
-
-         vmax = amax * (Ta + (2 * Ts) + Tj);
-         
-
+        vmax = amax * ((2 * Ts) + Tad);
           #ifdef __debug
          SerialUSB.print("CASE 1 :");
          SerialUSB.println("Trajectory segments with a constant velocity do not exist");
@@ -587,22 +732,27 @@ float S4_CurvePlanner::CalculateTa() {
          SerialUSB.print("CASE 2 :");
          SerialUSB.println("both the maximum acceleration and velocity can reach their maximums");
          #endif
-
+         
+         
          Tv = CalculateTv();
 
     }
 
     // Choose the minimum Ta among the constraints
-    return Ta, vmax;
+    return Ta;
 
 }
 
 
 
 float S4_CurvePlanner::CalculateTv() {
+
+     
    
     // Calculate Tv based on the velocity constraint (Equation 27)
-     Tv = (dmax / vmax) - ((4 * Ts) + (2 * Tj) + Ta);
+     Tv = (dmax / vmax) + ((4 * Ts) + (2 * Tj) + Ta);
+
+    //vmax = (qe - qs) / Tv - (4 * Ts + 2 * Tj + Ta);
 
     return Tv;
 }
@@ -614,9 +764,7 @@ float S4_CurvePlanner::CalculateTv() {
 bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_) {
 
     
-
-
-        
+   
         //Start Position
         qs = Xi;
 
@@ -761,27 +909,73 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         
 
         //Calculate Notations
-        v1 = v0 + (jmax / 6.0) * pow(T1, 2); 
-        q1 = (v0 * T1) + (jmax / 24.0) * pow(T1, 3);
 
+        a0_ =  0.0f;
+
+        a1_ =  jmax * 0.0f + (jmax / 2.0) * T1;
+        v1 = vs + (jmax / 6.0) * pow(T1, 2); 
+        q1 = (vs * T1) + (jmax / 24.0) * pow(T1, 3);
+
+        a2_ = (jmax * 0.0f) - (jmax / (2 * T3)) * pow(0.0f, 2) + (jmax / 2) * (T1 + (2 * T2));
         v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
         q2 = q1 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
 
-        v3 = v2 + ((jmax / 6.0) * T3) * ((3 * T1) + (6 * T2) + (2 * T3));
+        a3_ = amax;
+        v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
         q3 = q2 + (jmax / 8.0) * pow(T3, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
+        a4_ = - (jmax / (2.0 * T5)) * pow(0.0f, 2) + amax;
         v4 = v3 + (amax * T4);
         q4 = q3 + (jmax / 2.0) * pow(T4, 2) + (v3 * T4);
 
-        v5 = v4 - (amax / 6.0) * pow(T5, 2) + (amax * T5);
+    
+        a5_ =  -(jmax * 0.0f) + amax - (jmax / 2.0) * T5;
+        v5 = v4 - (jmax / 6.0) * pow(T5, 2) + (amax * T5);
         q5 = q4 - ((jmax / 24.0) * pow(T5, 3)) + ((amax / 2.0) * pow(T5, 2)) + (v4 * T5);
 
-        v6 = v5 - ((jmax / 2.0) * pow(T6, 2)) + ((amax - (jmax / 2.0) * T5) * T6);
-        q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + (v5 * T6);
+
+         a6_ = -(jmax * 0.0f) + ((jmax / (2.0 * T7)) * pow(0.0f, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
+
+        //v6 = 7.7f;
+        v6 = v5 - (jmax / 2.0) * pow(T6, 2) + (amax - (jmax / 2.0) * T5) * T6;
+        //q6 = q5 + (((6 * amax) - (jmax / 2.0) * T5) * pow(T6, 2) / 2.0);
+        q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + v5 * T6;
         
+        a7_ = 0.0f;
         v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
         q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
+        SerialUSB.print("a0_: "); SerialUSB.println(a0_);
+        SerialUSB.print("a1_: "); SerialUSB.println(a1_);
+        SerialUSB.print("a2_: "); SerialUSB.println(a2_);
+        SerialUSB.print("a3_: "); SerialUSB.println(a3_);
+        SerialUSB.print("a4_: "); SerialUSB.println(a4_);
+        SerialUSB.print("a5_: "); SerialUSB.println(a5_);
+        SerialUSB.print("a6_: "); SerialUSB.println(a6_);
+        SerialUSB.print("a7_: "); SerialUSB.println(a7_);
+
+
+        SerialUSB.print("vs: "); SerialUSB.println(vs);
+        SerialUSB.print("v1: "); SerialUSB.println(v1);
+        SerialUSB.print("v2: "); SerialUSB.println(v2);
+        SerialUSB.print("v3: "); SerialUSB.println(v3);
+        SerialUSB.print("v4: "); SerialUSB.println(v4);
+        SerialUSB.print("v5: "); SerialUSB.println(v5);
+        SerialUSB.print("v6: "); SerialUSB.println(v6);
+        SerialUSB.print("v7: "); SerialUSB.println(v7);
+
+        SerialUSB.print("qs: "); SerialUSB.println(qs);
+        SerialUSB.print("q1: "); SerialUSB.println(q1);
+        SerialUSB.print("q2: "); SerialUSB.println(q2);
+        SerialUSB.print("q3: "); SerialUSB.println(q3);
+        SerialUSB.print("q4: "); SerialUSB.println(q4);
+        SerialUSB.print("q5: "); SerialUSB.println(q5);
+        SerialUSB.print("q6: "); SerialUSB.println(q6);
+        SerialUSB.print("q7: "); SerialUSB.println(q7);
+
+    
+
+    
 
         return true;
 }
@@ -863,9 +1057,24 @@ if (t >= t0 && t < t1) {
 
     acel_now = (jmax / (2.0f * T1)) * pow(tau1, 2);
 
+    tou1 = mapfloat(tau1, 0, T1, 0, PI/2);
+
+    // Calculate the desired amplitude based on the velocity at the end of acceleration
+     desiredAmplitude = 0.5 * amax;
+
+      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
+     //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou1));
+
+    //pos_target = qs + desiredAmplitude * (1.0 - sin(tou1)); 
+
+    position_map = mapfloat(acel_now, 0, a1_, qs, q1);
+
     vel_target = (jmax / (6.0f * T1)) * pow(tau1, 3) + vs;
 
-    pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
+    //pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
+
+    
+    
     
   
     #ifdef __debug
@@ -879,10 +1088,11 @@ if (t >= t0 && t < t1) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
-    SerialUSB.println(pos_target);
+    SerialUSB.print(pos_target);
+    SerialUSB.println(",");
     #endif
 
 
@@ -912,7 +1122,7 @@ if (t >= t1 && t < t2) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
     SerialUSB.println(pos_target);
@@ -929,10 +1139,30 @@ if (t >= t2 && t < t3) {
     jerk_now = jmax - (jmax / T3) * tau3;
 
     acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
+     
+     if (T2 == 0){
+
+      tou3 = mapfloat(tau3, 0, T3, PI/2, PI);
+
+    // Calculate the desired amplitude based on the velocity at the end of acceleration
+      desiredAmplitude = 0.5 * amax;
+
+      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
+      //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou3));
+
+      //pos_target = q2 + desiredAmplitude * (1.0 - sin(tou3));
+      position_map = mapfloat(acel_now, a2_, a3_, q2, q3);
+
+
+     }
+
+
 
     vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
 
-    pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
+    //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
+
+   
 
     
     #ifdef __debug
@@ -946,10 +1176,11 @@ if (t >= t2 && t < t3) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
-    SerialUSB.println(pos_target);
+    SerialUSB.print(pos_target);
+    SerialUSB.println(",");
     #endif
 
 
@@ -963,7 +1194,7 @@ if (t >= t3 && t < t4) {
 
     acel_now = amax;
 
-    vel_target = amax * tau4 - v3;
+    vel_target = (amax * tau4) + v3;
 
     pos_target = (amax / 2.0) * pow(tau4, 2) + (v3 * tau4) + q3;
 
@@ -979,10 +1210,11 @@ if (t >= t3 && t < t4) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
-    SerialUSB.println(pos_target);
+    SerialUSB.print(pos_target);
+    SerialUSB.println(",");
     #endif
 
 }
@@ -995,10 +1227,31 @@ if (t >= t4 && t < t5) {
 
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
 
-    vel_target = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
+    tou5 = mapfloat(tau5, 0.0f, T5, PI, PI*1.5f);
 
-    pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
+    // Calculate the desired amplitude based on the velocity at the end of acceleration
+     desiredAmplitude = 0.5 * amax;
 
+      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
+     //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou5));
+
+
+     //pos_target = q4 + desiredAmplitude * (1.0 - sin(tou5));
+
+    // position_map = mapfloat_dec(acel_now, a4_, a5_, q4, q5);
+
+     position_map = (a4_ - acel_now ) * (q5 - q4) / (a4_ - a5_) + q4;
+
+    vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
+    //vel_target = (jmax / 2.0) * pow(tau6, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
+
+    //pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
+
+    //float position_map = mapfloat(acel_now, a4_, a5_, q4, q5);
+
+   
+
+    
     
     #ifdef __debug
     SerialUSB.print("tau5:");
@@ -1011,7 +1264,7 @@ if (t >= t4 && t < t5) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
     SerialUSB.println(pos_target);
@@ -1022,14 +1275,17 @@ if (t >= t5 && t < t6) {
     
     // Code for the [t5, t6] time range
     tau6 = t - t5;
+    tau5 = t - t4;
     
     jerk_now = -jmax;
 
-    acel_now = -jmax * tau6 + amax - (jmax / (2.0 * T5)) * tau5;
+    acel_now = -(jmax * tau6) + amax - (jmax / (2.0 * T5)) * T5;
 
-    vel_target =  (-jmax / 2.0) * pow(tau6, 2) + (amax - (jmax / 2.0) * tau5) * tau6 + v5;
+    float tempt_cal = amax - (jmax / 2.0) * T5;
 
-    pos_target = (-jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
+    vel_target =  - (jmax / 2.0) * pow(tau6, 2) + tempt_cal * tau6 + v5;
+
+    pos_target = - (jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
 
     
     #ifdef __debug
@@ -1043,7 +1299,7 @@ if (t >= t5 && t < t6) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
     SerialUSB.println(pos_target);
@@ -1056,14 +1312,44 @@ if (t >= t6 && t < t7) {
     // Code for the [t6, t7] time range
     tau7 = t - t6;
 
-    jerk_now = -jmax + ((jmax / T7) * tau7);
+    jerk_now = - jmax + ((jmax / T7) * tau7);
 
-    acel_now = -(jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
+    acel_now = - (jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
 
-    vel_target = (-(jmax / 2.0) * pow(tau7, 2)) + ((jmax / (6.0 * T7)) * pow(tau7, 3)) + ((amax - (jmax / (2.0 * T5)) - (jmax * T7)) * tau7) + v6;
+     tou7 = mapfloat(tau7, 0, T7, PI*1.5f, 2*PI);
 
-    pos_target = (-(jmax / 6.0) * pow(tau7, 3)) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - (jmax * T5) - ((2 * jmax) * T1)) / 4) * pow(tau7, 2) + (v6 * tau7) + q6;
+    // Calculate the desired amplitude based on the velocity at the end of acceleration
+     desiredAmplitude = 0.5 * amax;
+
+      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
+    // acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou7));
+
+
+     //pos_target = q6 + desiredAmplitude * (1.0 - sin(tou7));  
+    // position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
+     position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
+
+    vel_target = - (jmax / 2.0) * pow(tau7, 2) + (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v6;
+     //vel_target =  (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax * tau7) + v6;
+
+    //vel_target = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
+
+    //pos_target = -(jmax / 6.0) * pow(tau7, 3) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - jmax * T5 - (2 * jmax) * T1) / 4) * pow(tau7, 2) + v6 * tau7 + q6;
+
+    //velocity = (jerk / 6.0) * std::pow(tau, 3) + (acceleration / 2.0) * std::pow(tau, 2);
+    //position = (jerk / 24.0) * std::pow(tau, 4) + (acceleration / 6.0) * std::pow(tau, 3) + (velocity * tau);
+
+    //float position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
  
+     // Calculate the fraction of the range between a6_ and a7_ that acel_now represents
+    //float fraction = (acel_now - a6_) / (a7_ - a6_);
+
+    // Use the fraction to interpolate between q6 and q7
+   // float position_map = q6 + fraction * (q7 - q6);
+
+        //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
+
+
 
     
     #ifdef __debug
@@ -1077,10 +1363,11 @@ if (t >= t6 && t < t7) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
-    SerialUSB.println(pos_target);
+    SerialUSB.print(pos_target);
+    SerialUSB.println(",");
     #endif
 
 
@@ -1112,10 +1399,11 @@ if (t >= t7 && t < t8) {
     SerialUSB.print(acel_now);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
-    SerialUSB.print(vel_target);
+    SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
     SerialUSB.println(pos_target);
+    
     #endif
 
 

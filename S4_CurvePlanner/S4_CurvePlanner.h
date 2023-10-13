@@ -40,17 +40,31 @@ private:
     float Tv;
     float Tf;
 
+    float tau5_last;
+    float accel_last;
+    float vel_velocity;
+    float tau_last = 0.0f;
+    float time_step = 0.0f;
+    float position_map;
+    float time_step_seconds;
+    float last_time;
+
     // Time segment intervals
     float ts;
     float tj;
     float ta;
     float tv;
 
-    
+    float a0_, a1_, a2_, a3_, a4_, a5_, a6_, a7_;
     float tau1, tau2, tau3, tau4, tau5, tau6, tau7, tau8, tau9, tau10, tau11, tau12, tau13, tau14, tau15;
+
+    float tou1, tou2, tou3, tou4, tou5, tou6, tou7, tou8, tou9, tou10, tou11, tou12, tou13, tou14, tou15;
     float T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15;
     float q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14;
     float vs, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14;
+
+    float average_acceleration;
+    float previous_acceleration;
     
 
     float CalculateTs();
