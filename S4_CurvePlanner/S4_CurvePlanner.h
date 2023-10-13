@@ -55,7 +55,7 @@ private:
     float ta;
     float tv;
 
-    float a0_, a1_, a2_, a3_, a4_, a5_, a6_, a7_;
+    float a0_, a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, a9_, a10_;
     float tau1, tau2, tau3, tau4, tau5, tau6, tau7, tau8, tau9, tau10, tau11, tau12, tau13, tau14, tau15;
 
     float tou1, tou2, tou3, tou4, tou5, tou6, tou7, tou8, tou9, tou10, tou11, tou12, tou13, tou14, tou15;
