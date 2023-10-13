@@ -1075,15 +1075,6 @@ if (t >= t0 && t < t1) {
 
     acel_now = (jmax / (2.0f * T1)) * pow(tau1, 2);
 
-    tou1 = mapfloat(tau1, 0, T1, 0, PI/2);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-     desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-     //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou1));
-
-    //pos_target = qs + desiredAmplitude * (1.0 - sin(tou1)); 
 
     position_map = mapfloat(acel_now, 0, a1_, qs, q1);
 
@@ -1160,22 +1151,6 @@ if (t >= t2 && t < t3) {
 
     acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
      
-     if (T2 == 0){
-
-      tou3 = mapfloat(tau3, 0, T3, PI/2, PI);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-      desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-      //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou3));
-
-      //pos_target = q2 + desiredAmplitude * (1.0 - sin(tou3));
-      position_map = mapfloat(acel_now, a2_, a3_, q2, q3);
-
-
-     }
-
 
 
     vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
@@ -1247,28 +1222,15 @@ if (t >= t4 && t < t5) {
 
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
 
-    tou5 = mapfloat(tau5, 0.0f, T5, PI, PI*1.5f);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-     desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-     //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou5));
-
-
-     //pos_target = q4 + desiredAmplitude * (1.0 - sin(tou5));
-
-    // position_map = mapfloat_dec(acel_now, a4_, a5_, q4, q5);
 
      position_map = (a4_ - acel_now ) * (q5 - q4) / (a4_ - a5_) + q4;
 
     vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
-    //vel_target = (jmax / 2.0) * pow(tau6, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
+
 
     //pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
 
-    //float position_map = mapfloat(acel_now, a4_, a5_, q4, q5);
-
+ 
    
 
     
@@ -1336,40 +1298,16 @@ if (t >= t6 && t < t7) {
 
     acel_now = - (jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
 
-     tou7 = mapfloat(tau7, 0, T7, PI*1.5f, 2*PI);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-     desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-    // acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou7));
-
-
-     //pos_target = q6 + desiredAmplitude * (1.0 - sin(tou7));  
-    // position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
+ 
      position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
 
     vel_target = - (jmax / 2.0) * pow(tau7, 2) + (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v6;
 
-   
-     //vel_target =  (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax * tau7) + v6;
 
-    //vel_target = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
 
     //pos_target = -(jmax / 6.0) * pow(tau7, 3) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - jmax * T5 - (2 * jmax) * T1) / 4) * pow(tau7, 2) + v6 * tau7 + q6;
 
-    //velocity = (jerk / 6.0) * std::pow(tau, 3) + (acceleration / 2.0) * std::pow(tau, 2);
-    //position = (jerk / 24.0) * std::pow(tau, 4) + (acceleration / 6.0) * std::pow(tau, 3) + (velocity * tau);
-
-    //float position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
- 
-     // Calculate the fraction of the range between a6_ and a7_ that acel_now represents
-    //float fraction = (acel_now - a6_) / (a7_ - a6_);
-
-    // Use the fraction to interpolate between q6 and q7
-   // float position_map = q6 + fraction * (q7 - q6);
-
-        //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
+    
 
 
 
@@ -1440,38 +1378,12 @@ if (t >= t8 && t < t9) {
 
     acel_now = - (jmax / (2.0f * T9)) * pow(tau9, 2);
 
-     tou9 = mapfloat(tau7, 0, T7, PI*1.5f, 2*PI);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-     desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-    // acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou7));
-
-
-     //pos_target = q6 + desiredAmplitude * (1.0 - sin(tou7));  
-    // position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
-     //position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
 
     vel_target = - (jmax / (6.0f * T9)) * pow(tau9, 3) + v8;
-     //vel_target =  (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax * tau7) + v6;
+    
 
-    //vel_target = - (jmax / (6.0 * T5)) * pow(tau5, 3) + (amax * tau5) + v4;
-
-    //pos_target = -(jmax / 6.0) * pow(tau7, 3) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - jmax * T5 - (2 * jmax) * T1) / 4) * pow(tau7, 2) + v6 * tau7 + q6;
-
-    //velocity = (jerk / 6.0) * std::pow(tau, 3) + (acceleration / 2.0) * std::pow(tau, 2);
-    //position = (jerk / 24.0) * std::pow(tau, 4) + (acceleration / 6.0) * std::pow(tau, 3) + (velocity * tau);
-
-    //float position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
- 
-     // Calculate the fraction of the range between a6_ and a7_ that acel_now represents
-    //float fraction = (acel_now - a6_) / (a7_ - a6_);
-
-    // Use the fraction to interpolate between q6 and q7
-   // float position_map = q6 + fraction * (q7 - q6);
-
-        //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
+   
+     //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
 
 
     
@@ -1507,34 +1419,12 @@ if (t >= t10 && t < t11) {
     // Code for the [t2, t3] time range
     jerk_now = - jmax + ((jmax / T11) * tau11);
 
-    //acel_now =  (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) + (jmax / 2) * (T1 + (2 * T11));
-    //acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
-
     // Inverted
      acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T1 + (2 * T2));
   
 
-      tou3 = mapfloat(tau3, 0, T3, PI/2, PI);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-      desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-      //acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou3));
-
-      //pos_target = q2 + desiredAmplitude * (1.0 - sin(tou3));
-     // position_map = mapfloat(acel_now, a2_, a3_, q2, q3);
-
-
- 
-
-
-
-    //vel_target = - (jmax / 2.0) * pow(tau11, 2) - (jmax / (6.0 * T11)) * pow(tau11, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau11 + v10;
-
     vel_target = - (jmax / 2.0) * pow(tau11, 2) + (jmax / (6.0 * T3)) * pow(tau11, 3) - (jmax / 2.0) * (T1 + (2 * T2)) * tau11 + v10;
 
-    //vel_target= +vel_target;
 
     //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
 
@@ -1617,20 +1507,7 @@ tau15 = t - t14;
 
     acel_now =  (jmax * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
 
-     tou7 = mapfloat(tau7, 0, T7, PI*1.5f, 2*PI);
-
-    // Calculate the desired amplitude based on the velocity at the end of acceleration
-     desiredAmplitude = 0.5 * amax;
-
-      // Calculate Y_ using the (1 - cos(t)) formula with the desired amplitude
-    // acel_now = Vi_ + desiredAmplitude * (1.0 - cos(tou7));
-
-
-     //pos_target = q6 + desiredAmplitude * (1.0 - sin(tou7));  
-    // position_map = mapfloat(acel_now, a6_, a7_, q6, q7);
      position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
-
-    //vel_target =  (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T15)) * pow(tau15, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v2;
 
      vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T7)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v2;
 
