@@ -447,24 +447,31 @@ float S4_CurvePlanner::CalculateTs() {
 
     // Choose the minimum Ts among the constraints
    if  (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-    Ts = min({Ts_d, Ts_v, Ts_a});
-   }
+        Ts = min({Ts_d, Ts_v, Ts_a}); }
+
+   if  (Ts_d <= 0.0f && Ts_v <= 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
+        Ts = 0.0f; }
 
    if (Ts_d <= 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-    Ts = min({Ts_v, Ts_a, Ts_j});
-   }
+        Ts = min({Ts_v, Ts_a, Ts_j});  }
+
+    if (Ts_d > 0.0f && Ts_v <= 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
+        Ts = min({Ts_d, Ts_a, Ts_j});  }
+
+    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j > 0.0f){
+        Ts = min({Ts_d, Ts_v, Ts_j});  }
+
+    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j <= 0.0f){
+        Ts = min({Ts_d, Ts_v, Ts_a});  }
 
    if (Ts_d <= 0.0f && Ts_v <= 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-    Ts = min({Ts_a, Ts_j});
-   }
+        Ts = min({Ts_a, Ts_j}); }
    
    if (Ts_d > 0.0f && Ts_v <= 0.0f && Ts_a <= 0.0f && Ts_j > 0.0f){
-    Ts = min({Ts_d, Ts_j});
-   }
+        Ts = min({Ts_d, Ts_j}); }
 
    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
-    Ts = min({Ts_d, Ts_v});
-   }
+        Ts = min({Ts_d, Ts_v}); }
     
 
     //smax = abs(dmax) / (8 * pow(Ts, 4));
@@ -598,26 +605,21 @@ float S4_CurvePlanner::CalculateTj() {
     SerialUSB.println(Tja);
     #endif
 
+
     if (Tjd > 0.0f && Tjv > 0.0f && Tja > 0.0f){
+         Tj = min({Tjd, Tjv, Tja}); }
 
-         Tj = min({Tjd, Tjv, Tja});
-
-    }
+    if (Tjd <= 0.0f && Tjv <= 0.0f && Tja <= 0.0f){
+         Tj = 0.0f; }
 
     if (Tjd <= 0.0f && Tjv > 0.0f && Tja > 0.0f){
+        Tj = min({Tjv, Tja}); }
 
-        Tj = min({Tjv, Tja});
-    }
-
-     if (Tjd > 0.0f && Tjv <= 0.0f && Tja > 0.0f){
-
-        Tj = min({Tjd, Tja});
-    }
+    if (Tjd > 0.0f && Tjv <= 0.0f && Tja > 0.0f){
+        Tj = min({Tjd, Tja}); }
 
     if (Tjd > 0.0f && Tjv > 0.0f && Tja <= 0.0f){
-
-        Tj = min({Tjd, Tjv});
-    }
+        Tj = min({Tjd, Tjv}); }
     
 
     //jmax = abs(dmax) / (8 * pow(Ts, 3) + (16 * pow(Ts, 2) * Tj) + ((10 * Ts) * pow(Tj, 2)) + (2 * pow(Tj, 3 )));
@@ -910,46 +912,43 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         //Calculate Notations
 
-        a0_ =  0.0f;
+      
 
-        a1_ =  jmax * 0.0f + (jmax / 2.0) * T1;
+     
         v1 = vs + (jmax / 6.0) * pow(T1, 2); 
         q1 = (vs * T1) + (jmax / 24.0) * pow(T1, 3);
 
-        a2_ = (jmax * 0.0f) - (jmax / (2 * T3)) * pow(0.0f, 2) + (jmax / 2) * (T1 + (2 * T2));
+      
         v2 = v1 + (jmax / 2.0) * T2 * (T1 + T2);
         q2 = q1 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
 
-        a3_ = amax;
+      
         v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
         q3 = q2 + (jmax / 8.0) * pow(T3, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
-        a4_ = - (jmax / (2.0 * T5)) * pow(0.0f, 2) + amax;
+        
         v4 = v3 + (amax * T4);
         q4 = q3 + (jmax / 2.0) * pow(T4, 2) + (v3 * T4);
 
-    
-        a5_ =  -(jmax * 0.0f) + amax - (jmax / 2.0) * T5;
+      
         v5 = v4 - (jmax / 6.0) * pow(T5, 2) + (amax * T5);
         q5 = q4 - ((jmax / 24.0) * pow(T5, 3)) + ((amax / 2.0) * pow(T5, 2)) + (v4 * T5);
 
 
-         a6_ = -(jmax * 0.0f) + ((jmax / (2.0 * T7)) * pow(0.0f, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
-
-        //v6 = 7.7f;
+         
         v6 = v5 - (jmax / 2.0) * pow(T6, 2) + (amax - (jmax / 2.0) * T5) * T6;
         //q6 = q5 + (((6 * amax) - (jmax / 2.0) * T5) * pow(T6, 2) / 2.0);
         q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + v5 * T6;
         
-        a7_ = 0.0f;
+       
         v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
         q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
-        a8_ =  jmax * 0.0f + (jmax / 2.0) * T8;
+       
         v8 = v7; 
         q8 = (v7 * T8) + (jmax / 24.0) * pow(T8, 3);
 
-        a9_ = (jmax * 0.0f) - (jmax / (2 * T3)) * pow(0.0f, 2) + (jmax / 2) * (T1 + (2 * T2));
+       
         v9 = v6;
         q9 = q8 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
 
@@ -1075,12 +1074,8 @@ if (t >= t0 && t < t1) {
 
     acel_now = (jmax / (2.0f * T1)) * pow(tau1, 2);
 
-
-    position_map = mapfloat(acel_now, 0, a1_, qs, q1);
-
     vel_target = (jmax / (6.0f * T1)) * pow(tau1, 3) + vs;
 
-    
 
     //pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
 
@@ -1152,7 +1147,6 @@ if (t >= t2 && t < t3) {
     acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
      
 
-
     vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
 
     //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
@@ -1222,9 +1216,6 @@ if (t >= t4 && t < t5) {
 
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
 
-
-     position_map = (a4_ - acel_now ) * (q5 - q4) / (a4_ - a5_) + q4;
-
     vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
 
 
@@ -1264,7 +1255,6 @@ if (t >= t5 && t < t6) {
     acel_now = -(jmax * tau6) + amax - (jmax / (2.0 * T5)) * T5;
 
     float tempt_cal = amax - (jmax / 2.0) * T5;
-
     vel_target =  - (jmax / 2.0) * pow(tau6, 2) + tempt_cal * tau6 + v5;
 
     pos_target = - (jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
@@ -1298,11 +1288,7 @@ if (t >= t6 && t < t7) {
 
     acel_now = - (jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
 
- 
-     position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
-
     vel_target = - (jmax / 2.0) * pow(tau7, 2) + (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v6;
-
 
 
     //pos_target = -(jmax / 6.0) * pow(tau7, 3) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - jmax * T5 - (2 * jmax) * T1) / 4) * pow(tau7, 2) + v6 * tau7 + q6;
@@ -1378,11 +1364,9 @@ if (t >= t8 && t < t9) {
 
     acel_now = - (jmax / (2.0f * T9)) * pow(tau9, 2);
 
-
     vel_target = - (jmax / (6.0f * T9)) * pow(tau9, 3) + v8;
     
 
-   
      //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
 
 
@@ -1420,8 +1404,7 @@ if (t >= t10 && t < t11) {
     jerk_now = - jmax + ((jmax / T11) * tau11);
 
     // Inverted
-     acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T1 + (2 * T2));
-  
+    acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T1 + (2 * T2));
 
     vel_target = - (jmax / 2.0) * pow(tau11, 2) + (jmax / (6.0 * T3)) * pow(tau11, 3) - (jmax / 2.0) * (T1 + (2 * T2)) * tau11 + v10;
 
@@ -1507,9 +1490,7 @@ tau15 = t - t14;
 
     acel_now =  (jmax * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
 
-     position_map = (a6_ - acel_now ) * (q7 - q6) / (a6_ - a7_) + q6;
-
-     vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T7)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v2;
+    vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T7)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v2;
 
 
 
