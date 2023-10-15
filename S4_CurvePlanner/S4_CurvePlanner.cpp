@@ -79,34 +79,27 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         
         float mm = mapfloat(motor->shaft_angle, 0, 2*PI, 0, buffer.mm_per_rev);
         SerialUSB.print("X:");
-        SerialUSB.println(mm, 4);
-        
+        SerialUSB.println(mm, 4); } 
 
-       
-          } 
+        // The controller must be able to wait for motion completion, typically with the M400 command. Any further commands sent after the M400 must be suspended until motion completion. 
+        // The controller must only acknowledge the command, when motion is complete i.e. the "ok" (COMMAND_CONFIRM_REGEX) response must be suspended until then, providing blocking 
+        // synchronization to OpenPnP.
 
-
-         // The controller must be able to wait for motion completion, typically with the M400 command. Any further commands sent after the M400 must be suspended until motion completion. 
-         // The controller must only acknowledge the command, when motion is complete i.e. the "ok" (COMMAND_CONFIRM_REGEX) response must be suspended until then, providing blocking 
-         // synchronization to OpenPnP.
-
-            if (commandValue_Int == 400){
-                // M400
-                // Wait for current move to complete
-                m400_flag = true;
-               // SerialUSB.println("ok");
-
+        if (commandValue_Int == 400){
+            // M400
+            // Wait for current move to complete
+            m400_flag = true;
+            // SerialUSB.println("ok");
             }
 
-            //The controller must support dynamic acceleration and/or jerk limits, typically by the M204 command for acceleration or the M201.3 command for jerk.
-            float commandValue2;
-             if (commandValue_Int == 204){
-                // M204
-                // Set acceleration
-        
-        
-                // Remove M so can convert to a float
-        
+        //The controller must support dynamic acceleration and/or jerk limits, typically by the M204 command for acceleration or the M201.3 command for jerk.
+        float commandValue2;
+            if (commandValue_Int == 204){
+            // M204
+            // Set acceleration
+    
+
+        // Remove M so can convert to a float
         commandValue2 = commandSrt.toFloat();
         vmax = commandValue2;
         // Try calling the planner to use this new velocity value
@@ -114,23 +107,23 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
         //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
         #ifdef __debug
-            SerialUSB.print("User wants velocity change. Vmax_: ");
-            SerialUSB.println(vmax);
+        SerialUSB.print("User wants velocity change. Vmax_: ");
+        SerialUSB.println(vmax);
         #endif
-      
             }
 
-            if (commandValue_Int == 201.3){
-                // M201.3
-                // Set jerk
 
-              // Remove M so can convert to a float
+        if (commandValue_Int == 201.3){
+        // M201.3
+        // Set jerk
 
+        // Remove M so can convert to a float
         //TODO
 
         //commandValue2 = commandSrt.toFloat();
         //Amax_ = commandValue2;
         //Dmax_ = Amax_;
+
         // Try calling the planner to use this new acceleration value
         // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
         //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
@@ -141,56 +134,58 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
        
             }
 
-            // The controller must be able to home. The homing procedure must be configurable, typically with the M206 command. The controller must be able to home to a position other than 0.
+    // The controller must be able to home. 
+    //The homing procedure must be configurable, typically with the M206 command. 
+    //The controller must be able to home to a position other than 0.
 
-            if (commandValue_Int == 206){
-                // M206
-                // Set current position, for homing to 0. 
+    if (commandValue_Int == 206){
+    // M206
+    // Set current position, for homing to 0. 
 
-                commandSrt = commandSrt.substring(4);
-                commandValue2 = commandSrt.toFloat();
-        
-                motor->shaft_angle = commandValue2; 
+    commandSrt = commandSrt.substring(4);
+    commandValue2 = commandSrt.toFloat();
 
-                // NOTE: Probably need to set position in a better mannor.
+    motor->shaft_angle = commandValue2; 
 
-                SerialUSB.print("Homing to: ");
-                SerialUSB.println(commandValue2);
+    // NOTE: Probably need to set position in a better mannor.
 
-                SerialUSB.print("Chekking shaft_angle : ");
-                SerialUSB.println(motor->shaft_angle);
-       
-            }
-  
+    SerialUSB.print("Homing to: ");
+    SerialUSB.println(commandValue2);
 
-            if (commandValue_Int == 203){
-                // M203
-                // Set maximum feedrate
-                //  TODO  TODO TODO
-            }
-          
+    SerialUSB.print("Chekking shaft_angle : ");
+    SerialUSB.println(motor->shaft_angle);
 
-            if (commandValue_Int == 201){
-                // M201
-                // Set maximum acceleration
-                //  TODO  TODO TODO
-        
-            }
-
-            
-            if (commandValue_Int == 202){
-                // M202
-                // Set maximum jerk
-                //  TODO  TODO TODO 
-            }
+    }
 
 
-            if (commandValue_Int == 205){
-                // M205
-                // Advanced settings
-                //  TODO  TODO TODO 
+    if (commandValue_Int == 203){
+        // M203
+        // Set maximum feedrate
+        //  TODO  TODO TODO
+    }
+    
 
-            }
+    if (commandValue_Int == 201){
+        // M201
+        // Set maximum acceleration
+        //  TODO  TODO TODO
+
+    }
+
+    
+    if (commandValue_Int == 202){
+        // M202
+        // Set maximum jerk
+        //  TODO  TODO TODO 
+    }
+
+
+    if (commandValue_Int == 205){
+        // M205
+        // Advanced settings
+        //  TODO  TODO TODO 
+
+    }
 
         // Place different if statements like "fetch current position".
 /*
@@ -215,13 +210,13 @@ void S4_CurvePlanner::doGcommandBuffer(char *gCodeCommand){
          
 
 void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
+
     #ifdef __debug
         SerialUSB.print("GGode command: G");
         SerialUSB.println(gCodeCommand);
-        
     #endif
-    //Serial.println("ok");
 
+    //Serial.println("ok");
     
     // Parse this string for vals
     String commandSrt = String(gCodeCommand);
@@ -229,8 +224,6 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
     float commandValue;
     switch (gCodeCommand[0]){
 
-
-   
 
     case 'V':
         // Remove V so can convert to a float
@@ -272,23 +265,22 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
 
         break;
     default:
+
         // Remove G so can convert to a float
-
-
-
         commandSrt = commandSrt.substring(1);
         commandValue = commandSrt.toFloat();
+
         //SerialUSB.print("Float: ");
           //  SerialUSB.println(commandValue, 5);
-
          //=  map(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
 
         float angle_command = mapfloat(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
+
         #ifdef __debug
-        
-            SerialUSB.print("Move to new position (rads): ");
-            SerialUSB.println(angle_command, 5);
+        SerialUSB.print("Move to new position (rads): ");
+        SerialUSB.println(angle_command, 5);
         #endif 
+
         // We start moving to the new position
         Initiate_Move(angle_command);
         break;
@@ -373,7 +365,6 @@ void S4_CurvePlanner::runPlannerOnTick(){
 }
 
 
-
 float S4_CurvePlanner::sign(float val){
     if (val < 0)
         return -1.0f;
@@ -381,50 +372,35 @@ float S4_CurvePlanner::sign(float val){
         return 0.0f;
     // if val > 0:
     return 1.0f;
-
 }
-
 
 
 float S4_CurvePlanner::sign_hard(float val){
     if (val < 0)
         return -1.0f;
     return 1.0f;
-
 }
-
 
 
 float S4_CurvePlanner::CalculateTs() {
 
 
     // Step 1: Calculate Ts from displacement constraint
-    
     SerialUSB.print("smax: ");
     SerialUSB.println(smax);
-
-
     float ds_max = dmax / (8 * smax);
-
     float Ts_d = pow(ds_max, 0.25f);
-
 
     //vmax = (2 * pow(Ts, 3)) * smax;
     // Step 2: Calculate Ts from velocity constraint
-    
     float Ts_v = cbrt(vmax / (2 * smax));
 
     // Step 3: Calculate Ts from acceleration constraint
-
     //amax = pow(Ts, 2) * smax;
-    
     float Ts_a = sqrt(amax / smax);
     
-
     // Step 4: Calculate Ts from jerk constraint
     float Ts_j = sqrt(jmax / smax);
-
-
 
     #ifdef __debug
     SerialUSB.println("**********************");
@@ -438,7 +414,6 @@ float S4_CurvePlanner::CalculateTs() {
     SerialUSB.print("Ts_j: ");
     SerialUSB.println(Ts_j, 8);
     #endif
-
 
 
     // Choose the minimum Ts among the constraints
@@ -468,11 +443,6 @@ float S4_CurvePlanner::CalculateTs() {
 
    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
         Ts = min({Ts_d, Ts_v}); }
-    
-
-  
-
-    
 
 
     if (Ts == Ts_d){
@@ -491,6 +461,7 @@ float S4_CurvePlanner::CalculateTs() {
         #endif
 
     }
+
 
      if (Ts == Ts_v){
 
@@ -511,16 +482,14 @@ float S4_CurvePlanner::CalculateTs() {
          SerialUSB.print("smax: ");
         SerialUSB.println(smax);
         #endif
-       
+
 
          CalculateTv();
 
     }
 
      if (Ts == Ts_a){
-     
-       
-       
+    
         jmax = smax * Ts_a;
         
         #ifdef __debug
@@ -534,12 +503,9 @@ float S4_CurvePlanner::CalculateTs() {
         SerialUSB.println(smax);
         #endif
        
-
          CalculateTa();
-
-         
-
     }
+
 
     if (Ts == Ts_j){
 
@@ -555,14 +521,10 @@ float S4_CurvePlanner::CalculateTs() {
         #endif
 
         Tj = CalculateTj();
-
     }
 
-   
 
-    
     return Ts;
-
 }
 
 
@@ -579,21 +541,15 @@ float S4_CurvePlanner::CalculateTj() {
     float a = (c / 27.0f) + (dmax / (4.0f * jmax));
     float b = sqrt(d + e);
     float Tjd = cbrt(a + b) + cbrt(a - b) + ((5.0f * Ts) / 3.0f); 
-   
-
     
     // Calculate Tvj based on the velocity constraint (Equation 18)
     float Tjv = sqrt((pow(Ts, 2) / 4) + (vmax / jmax)) - ((3 * Ts) / 2);
 
-    
 
     // Calculate Taj based on the acceleration constraint (Equation 20)
     float Tja = (amax / jmax) - Ts;
-    
 
-    // Choose the minimum Tj among the constraints
-
-
+ 
      #ifdef __debug
     SerialUSB.println("*******************************");
     SerialUSB.println("CalculateTj variables: ");
@@ -605,10 +561,8 @@ float S4_CurvePlanner::CalculateTj() {
     SerialUSB.println(Tja);
     #endif
 
-
+     // Choose the minimum Tj among the constraints
      Tj = min({Tjd, Tjv, Tja}); 
-
-    
 
     //jmax = abs(dmax) / (8 * pow(Ts, 3) + (16 * pow(Ts, 2) * Tj) + ((10 * Ts) * pow(Tj, 2)) + (2 * pow(Tj, 3 )));
     //vmax = jmax * ((2 * pow(Ts, 2)) + ((3*Ts) * Tj) + pow(Tj, 2));
@@ -676,22 +630,16 @@ float S4_CurvePlanner::CalculateTj() {
 float S4_CurvePlanner::CalculateTa() {
 
     //amax = (smax * Ts) * (Ts + Tj);
-
     float pre_calc = (2 * Ts) + Tj;
     // Calculate Tda based on the displacement constraint (Equation 23)
     float Tad = ((3 * Tj) / 2) - (3 * Ts) + sqrt((pow(pre_calc, 2) / 4 ) + (dmax / amax));
 
     //amax = abs(dmax) / (8 * pow(Ta, 2) + ((3 * Ta) * Tj) + ((6 * Ts) * Ta) + (8 * pow(Ts, 2)) + (2 * pow(Tj, 2)) + ((8 * Ts) * Tj));
-
     // Calculate Tva based on the velocity constraint (Equation 25)
     float Tav = (vmax / amax) - Tj + (2 * Ts);
 
- 
 
     // Choose the minimum Ta among the constraints
-
-    
-   
     Ta = min({Tad, Tav});
 
     
@@ -725,27 +673,19 @@ float S4_CurvePlanner::CalculateTa() {
          #ifdef __debug
          SerialUSB.print("CASE 2 :");
          SerialUSB.println("both the maximum acceleration and velocity can reach their maximums");
-       
          #endif
-
-         
-         
          
          CalculateTv();
-
     }
 
     // Choose the minimum Ta among the constraints
     return Ta;
-
 }
-
 
 
     float S4_CurvePlanner::CalculateTv() {
 
      //vmax = (smax * Ts) * (Ts + Tj) * ((2 * Ts) + Tj + Ta);
-   
     // Calculate Tv based on the velocity constraint (Equation 27)
      Tv = (dmax / vmax) + ((4 * Ts) + (2 * Tj) + Ta);
 
@@ -873,6 +813,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         #endif
 
         
+        /*************************************/
         // Asign duration values for T1 to T15
          T1 = Ts;
          T2 = Tj;
@@ -889,6 +830,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T13 = Ts;
          T14 = Tj;
          T15 = Ts;
+
+
 
         // Print the time intervals
         #ifdef __debug
@@ -913,10 +856,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         
 
         //Calculate Notations
-
-      
-
-     
         v1 = vs + (jmax / 6.0) * pow(T1, 2); 
         q1 = (vs * T1) + (jmax / 24.0) * pow(T1, 3);
 
