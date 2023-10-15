@@ -21,10 +21,6 @@ float mapfloat(float x, float in_min, float in_max, float out_min, float out_max
      return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-float mapfloat_dec(float x, float in_min, float in_max, float out_min, float out_max){ 
-     return (x - in_max) * (out_max - out_min) / (in_min - in_max) + out_min;
-}
-
 
 void S4_CurvePlanner::doMCommand(char *MCommand){
   #ifdef __debug
