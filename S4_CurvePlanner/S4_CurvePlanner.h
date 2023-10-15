@@ -81,7 +81,7 @@ private:
 
     float am, vm;
 
-
+    float factor;
     float pos_target;
     float jerk_now;
     float acel_now;
