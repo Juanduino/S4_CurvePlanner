@@ -34,30 +34,30 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         commandValue_Int = commandSrt.toInt();
 
   
-        // The controller must be able to report its capabilities, typically with the M115 command.
-        if (commandValue_Int == 115){
-            // M115
-            // Send firmware version and capabilities
-            // Note: Not final. Suggested by co-pilot.
-            SerialUSB.println("FIRMWARE_NAME:SimpleFOC");
-            SerialUSB.println("FIRMWARE_VERSION:1.0.0");
-            SerialUSB.println("FIRMWARE_URL:GIT_URL");
-            SerialUSB.println("PROTOCOL_VERSION:1.0");
-            SerialUSB.println("AVAILABLE_COMMANDS:M,V,A,L");
-            SerialUSB.println("CAPABILITY:MOTOR_VOLTAGE,INPUT_VOLTAGE,POWER_SUPPLY,POSITION_CONTROL,VELOCITY_CONTROL,VELOCITY_RAMP,TRAJECTORY_CONTROL");
-            SerialUSB.println("POWER_SUPPLY:24V");
-            SerialUSB.println("MOTOR_VOLTAGE:24V");
-            SerialUSB.println("INPUT_VOLTAGE:24V");
-            SerialUSB.println("POSITION_CONTROL:1");
-            SerialUSB.println("VELOCITY_CONTROL:1");
-            SerialUSB.println("VELOCITY_RAMP:1");
-            SerialUSB.println("TRAJECTORY_CONTROL:1");
-            SerialUSB.println("POSITION_MIN:-3.14159265359");
-            SerialUSB.println("POSITION_MAX:3.14159265359");
-            SerialUSB.println("VELOCITY_MIN:-12.5663706144");
-            SerialUSB.println("VELOCITY_MAX:12.5663706144");
-            SerialUSB.println("ACCELERATION_MIN:-12.5663706144");
-            SerialUSB.println("ACCELERATION_MAX:12.5663706144");
+    // The controller must be able to report its capabilities, typically with the M115 command.
+    if (commandValue_Int == 115){
+        // M115
+        // Send firmware version and capabilities
+        // Note: Not final. Suggested by co-pilot.
+        SerialUSB.println("FIRMWARE_NAME:SimpleFOC");
+        SerialUSB.println("FIRMWARE_VERSION:1.0.0");
+        SerialUSB.println("FIRMWARE_URL:GIT_URL");
+        SerialUSB.println("PROTOCOL_VERSION:1.0");
+        SerialUSB.println("AVAILABLE_COMMANDS:M,V,A,L");
+        SerialUSB.println("CAPABILITY:MOTOR_VOLTAGE,INPUT_VOLTAGE,POWER_SUPPLY,POSITION_CONTROL,VELOCITY_CONTROL,VELOCITY_RAMP,TRAJECTORY_CONTROL");
+        SerialUSB.println("POWER_SUPPLY:24V");
+        SerialUSB.println("MOTOR_VOLTAGE:24V");
+        SerialUSB.println("INPUT_VOLTAGE:24V");
+        SerialUSB.println("POSITION_CONTROL:1");
+        SerialUSB.println("VELOCITY_CONTROL:1");
+        SerialUSB.println("VELOCITY_RAMP:1");
+        SerialUSB.println("TRAJECTORY_CONTROL:1");
+        SerialUSB.println("POSITION_MIN:-3.14159265359");
+        SerialUSB.println("POSITION_MAX:3.14159265359");
+        SerialUSB.println("VELOCITY_MIN:-12.5663706144");
+        SerialUSB.println("VELOCITY_MAX:12.5663706144");
+        SerialUSB.println("ACCELERATION_MIN:-12.5663706144");
+        SerialUSB.println("ACCELERATION_MAX:12.5663706144");
 
         }
 
@@ -195,15 +195,11 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
 }
 
 
-
 void S4_CurvePlanner::doGcommandBuffer(char *gCodeCommand){
 
         buffer.push(gCodeCommand);
-
 }
 
-
-         
 
 void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
 
@@ -222,64 +218,65 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
 
 
     case 'V':
-        // Remove V so can convert to a float
-        commandSrt = commandSrt.substring(1);
-        commandValue = commandSrt.toFloat();
-        //Vmax_ = commandValue;
-        // Try calling the planner to use this new velocity value
-        // We have to use the current pos, vel, and accel
-        // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
-        //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
-        //This new value will be used when the gCommand is executed. 
-        #ifdef __debug
-            SerialUSB.print("User wants velocity change. Vmax_: ");
-            SerialUSB.println(vmax);
-        #endif
-        break;
+    // Remove V so can convert to a float
+    commandSrt = commandSrt.substring(1);
+    commandValue = commandSrt.toFloat();
+    //Vmax_ = commandValue;
+    // Try calling the planner to use this new velocity value
+    // We have to use the current pos, vel, and accel
+    // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
+    //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
+    //This new value will be used when the gCommand is executed. 
+    #ifdef __debug
+        SerialUSB.print("User wants velocity change. Vmax_: ");
+        SerialUSB.println(vmax);
+    #endif
+    break;
+
     case 'A':
-        // Remove A so can convert to a float
-        commandSrt = commandSrt.substring(1);
-        commandValue = commandSrt.toFloat();
-        amax = commandValue;
-        //Dmax_ = Amax_;
-        // Try calling the planner to use this new acceleration value
-        // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
-        //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
-        //This new value will be used when the gCommand is executed.
-        #ifdef __debug
-            SerialUSB.print("User wants acceleration change. Amax_: ");
-            SerialUSB.println(amax);
+    // Remove A so can convert to a float
+    commandSrt = commandSrt.substring(1);
+    commandValue = commandSrt.toFloat();
+    amax = commandValue;
+    //Dmax_ = Amax_;
+    // Try calling the planner to use this new acceleration value
+    // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
+    //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
+    //This new value will be used when the gCommand is executed.
+    #ifdef __debug
+        SerialUSB.print("User wants acceleration change. Amax_: ");
+        SerialUSB.println(amax);
 
         #endif 
         break;
-    case 'M':
 
+    case 'M':
     commandSrt = commandSrt.substring(1);
     //commandValue = commandSrt.toFloat();
     commandSrt.toCharArray(command_char, 10);
     doMCommand(command_char);
-
+       
         break;
+
     default:
+    // Remove G so can convert to a float
+    commandSrt = commandSrt.substring(1);
+    commandValue = commandSrt.toFloat();
 
-        // Remove G so can convert to a float
-        commandSrt = commandSrt.substring(1);
-        commandValue = commandSrt.toFloat();
+    //SerialUSB.print("Float: ");
+        //  SerialUSB.println(commandValue, 5);
+        //=  map(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
 
-        //SerialUSB.print("Float: ");
-          //  SerialUSB.println(commandValue, 5);
-         //=  map(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
+    float angle_command = mapfloat(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
 
-        float angle_command = mapfloat(commandValue, 0, buffer.mm_per_rev, 0, 2*PI);
+    #ifdef __debug
+    SerialUSB.print("Move to new position (rads): ");
+    SerialUSB.println(angle_command, 5);
+    #endif 
 
-        #ifdef __debug
-        SerialUSB.print("Move to new position (rads): ");
-        SerialUSB.println(angle_command, 5);
-        #endif 
-
-        // We start moving to the new position
-        Initiate_Move(angle_command);
-        break;
+    // We start moving to the new position
+    Initiate_Move(angle_command);
+    break;
     }
 
 }
@@ -314,8 +311,8 @@ void S4_CurvePlanner::runPlannerOnTick(){
             }
         }
             
-            // see if we are in a move or not
-        if (isTrajectoryExecuting){
+    // see if we are in a move or not
+    if (isTrajectoryExecuting){
         // we are in a move, let's calc the next position
         float timeSinceStartingTrajectoryInSeconds = (millis() - plannerStartingMovementTimeStamp) / 1000.0f;
         RuntimePlanner(timeSinceStartingTrajectoryInSeconds);
@@ -323,37 +320,37 @@ void S4_CurvePlanner::runPlannerOnTick(){
 
         float EventHorizon =    0.1f; // 100ms
 
-            if (!buffer.isEmpty() && !m400_flag && timeSinceStartingTrajectoryInSeconds >= ((t1 + t2) - EventHorizon)){
-            
-            buffer.pop(tailItem, nextItem);
-            
-            executeCommand(tailItem, nextItem);
+        if (!buffer.isEmpty() && !m400_flag && timeSinceStartingTrajectoryInSeconds >= ((t1 + t2) - EventHorizon)){
+        
+        buffer.pop(tailItem, nextItem);
+        
+        executeCommand(tailItem, nextItem);
 
-            }
+        }
 
 
 
-        // see if we are done with our move
-        if (timeSinceStartingTrajectoryInSeconds >= Tf){
+    // see if we are done with our move
+    if (timeSinceStartingTrajectoryInSeconds >= Tf){
             // we are done with move
-            // motor.monitor_downsample = 0; // disable monitor
-            #ifdef __debug
-            SerialUSB.println("Done with move");
-            #endif 
+        // motor.monitor_downsample = 0; // disable monitor
+        #ifdef __debug
+        SerialUSB.println("Done with move");
+        #endif 
 
-            SerialUSB.println("ok");
-            float map_pos = mapfloat(motor->shaft_angle, 0, 2*PI, 0, buffer.mm_per_rev);
-            SerialUSB.print("X:");
-            SerialUSB.println(map_pos, 4);
-            SerialUSB.print("Shaft angle:");
-            SerialUSB.println(motor->shaft_angle, 4);
+        SerialUSB.println("ok");
+        float map_pos = mapfloat(motor->shaft_angle, 0, 2*PI, 0, buffer.mm_per_rev);
+        SerialUSB.print("X:");
+        SerialUSB.println(map_pos, 4);
+        SerialUSB.print("Shaft angle:");
+        SerialUSB.println(motor->shaft_angle, 4);
 
+        
+        isTrajectoryExecuting = false;
             
-            isTrajectoryExecuting = false;
-                
-            if (m400_flag){
-            Serial.println("ok");
-            m400_flag = false;}
+        if (m400_flag){
+        Serial.println("ok");
+        m400_flag = false;}
 
       }
     }
@@ -640,38 +637,41 @@ float S4_CurvePlanner::CalculateTa() {
 
     
 
-        #ifdef __debug
-        SerialUSB.println("*******************************");
-        SerialUSB.println("CalculateTa variables: ");   
-        SerialUSB.print("Tad: ");
-        SerialUSB.println(Tad);
-        SerialUSB.print("Tav: ");
-        SerialUSB.println(Tav);
-        SerialUSB.print("amax: ");
-        SerialUSB.println(amax);
-        #endif
+    #ifdef __debug
+    SerialUSB.println("*******************************");
+    SerialUSB.println("CalculateTa variables: ");   
+    SerialUSB.print("Tad: ");
+    SerialUSB.println(Tad);
+    SerialUSB.print("Tav: ");
+    SerialUSB.println(Tav);
+    SerialUSB.print("amax: ");
+    SerialUSB.println(amax);
+    #endif
 
 
 
-        if (Ta == Tad){
+    if (Ta == Tad){
 
-         vmax = amax * ((2 * Ts) + Tad);
-          #ifdef __debug
-         SerialUSB.print("CASE 1 :");
-         SerialUSB.println("Trajectory segments with a constant velocity do not exist");
-         SerialUSB.print("real Vmax:");
-         SerialUSB.println(vmax);
-         #endif
-        } 
+    vmax = amax * ((2 * Ts) + Tad);
+    #ifdef __debug
+    SerialUSB.print("CASE 1 :");
+    SerialUSB.println("Trajectory segments with a constant velocity do not exist");
+    SerialUSB.print("real Vmax:");
+    SerialUSB.println(vmax);
+    #endif
+    } 
 
-        if (Ta == Tav){
+    if (Ta == Tav){
 
-         #ifdef __debug
-         SerialUSB.print("CASE 2 :");
-         SerialUSB.println("both the maximum acceleration and velocity can reach their maximums");
-         #endif
-         
-         CalculateTv();
+    #ifdef __debug
+    SerialUSB.print("CASE 2 :");
+    SerialUSB.println("both the maximum acceleration and velocity can reach their maximums");
+    #endif
+    
+
+    CalculateTv();
+
+
     }
 
     // Choose the minimum Ta among the constraints
