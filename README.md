@@ -8,7 +8,7 @@ This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This
 
 The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are curved.
 
-All the math for the 4th order planner was taken from this ressource, with the help of ChatGPT.
+All the math for the 4th order planner was inspired by:
 
 
 [Kinematically Constrained Jerk–Continuous S-Curve Trajectory Planning in Joint Space for Industrial Robots](https://www.mdpi.com/2079-9292/12/5/1135)
@@ -28,7 +28,9 @@ This figure illustrates how the motion-profile is divided into 15 time segments.
 ![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/Figure%203.png)
 
 
+Here is a move restricted by jerk. By streaching out the ramp, with the time in constant jerk, the acceleration takes longer. 
 
+![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/jerk%20.png)
 
 
 [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)
