@@ -408,34 +408,9 @@ float S4_CurvePlanner::CalculateTs() {
     SerialUSB.println(Ts_j, 8);
     #endif
 
-
+     Ts = min({Ts_d, Ts_v, Ts_a, Ts_j}); 
     // Choose the minimum Ts among the constraints
-   if  (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_d, Ts_v, Ts_a, Ts_j}); }
-
-   if  (Ts_d <= 0.0f && Ts_v <= 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
-        Ts = 0.0f; }
-
-   if (Ts_d <= 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_v, Ts_a, Ts_j});  }
-
-    if (Ts_d > 0.0f && Ts_v <= 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_d, Ts_a, Ts_j});  }
-
-    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_d, Ts_v, Ts_j});  }
-
-    if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a > 0.0f && Ts_j <= 0.0f){
-        Ts = min({Ts_d, Ts_v, Ts_a});  }
-
-   if (Ts_d <= 0.0f && Ts_v <= 0.0f && Ts_a > 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_a, Ts_j}); }
-   
-   if (Ts_d > 0.0f && Ts_v <= 0.0f && Ts_a <= 0.0f && Ts_j > 0.0f){
-        Ts = min({Ts_d, Ts_j}); }
-
-   if (Ts_d > 0.0f && Ts_v > 0.0f && Ts_a <= 0.0f && Ts_j <= 0.0f){
-        Ts = min({Ts_d, Ts_v}); }
+  
 
 
     if (Ts == Ts_d){
@@ -1007,9 +982,6 @@ if (t >= t0 && t < t1) {
 
     
     #ifdef __debug
-    SerialUSB.print("tau1:");
-    SerialUSB.print(tau1);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1041,9 +1013,6 @@ if (t >= t1 && t < t2) {
 
     
     #ifdef __debug
-    SerialUSB.print("tau2:");
-    SerialUSB.print(tau2);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1075,9 +1044,6 @@ if (t >= t2 && t < t3) {
 
 
     #ifdef __debug
-    SerialUSB.print("tau3:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1108,9 +1074,6 @@ if (t >= t3 && t < t4) {
 
     
     #ifdef __debug
-    SerialUSB.print("tau4:");
-    SerialUSB.print(tau4);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1143,9 +1106,6 @@ if (t >= t4 && t < t5) {
 
 
     #ifdef __debug
-    SerialUSB.print("tau5:");
-    SerialUSB.print(tau5);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1178,9 +1138,6 @@ if (t >= t5 && t < t6) {
 
     
     #ifdef __debug
-    SerialUSB.print("tau6:");
-    SerialUSB.print(tau6);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1213,9 +1170,6 @@ if (t >= t6 && t < t7) {
 
 
     #ifdef __debug
-    SerialUSB.print("tau7:");
-    SerialUSB.print(tau7);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1251,9 +1205,6 @@ if (t >= t7 && t < t8) {
 
     
     #ifdef __debug
-    SerialUSB.print("tau8:");
-    SerialUSB.print(tau8);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1287,9 +1238,6 @@ if (t >= t8 && t < t9) {
 
 
     #ifdef __debug
-    SerialUSB.print("tau9:");
-    SerialUSB.print(tau7);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1319,9 +1267,6 @@ if (t >= t9 && t < t10) {
 
         
     #ifdef __debug
-    SerialUSB.print("tau10:");
-    SerialUSB.print(tau7);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1357,9 +1302,6 @@ if (t >= t10 && t < t11) {
    
     
     #ifdef __debug
-    SerialUSB.print("tau11:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1390,9 +1332,6 @@ if (t >= t11 && t < t12) {
 
     
  #ifdef __debug
-    SerialUSB.print("tau12:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1423,9 +1362,6 @@ if (t >= t12 && t < t13) {
 
 
  #ifdef __debug
-    SerialUSB.print("tau13:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1456,9 +1392,6 @@ if (t >= t13 && t < t14) {
 
 
     #ifdef __debug
-    SerialUSB.print("tau14:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
@@ -1489,9 +1422,7 @@ tau15 = t - t14;
 
  
 #ifdef __debug
-    SerialUSB.print("tau15:");
-    SerialUSB.print(tau3);
-    SerialUSB.print(",");
+   
     SerialUSB.print("jerk_now:");
     SerialUSB.print(jerk_now);
     SerialUSB.print(",");
