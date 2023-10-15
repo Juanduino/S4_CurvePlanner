@@ -306,77 +306,70 @@ void S4_CurvePlanner::runPlannerOnTick(){
         plannerTimeStap = millis();
 
         
-        
-        if (!isTrajectoryExecuting){
-            // we are not in a move, let's see if we have a new move to start
+    
+    if (!isTrajectoryExecuting){
+        // we are not in a move, let's see if we have a new move to start
 
-            
-            if (!buffer.isEmpty()){
-                // we have a new move to start
-                buffer.pop(tailItem, nextItem);
+    
+    if (!buffer.isEmpty()){
+        // we have a new move to start
+        buffer.pop(tailItem, nextItem);
 
-                #ifdef __debug
-                SerialUSB.println("tailItem: ");
-                SerialUSB.println(tailItem);
-                SerialUSB.println("nextItem: ");
-                SerialUSB.println(nextItem);
-                #endif
+        #ifdef __debug
+        SerialUSB.println("tailItem: ");
+        SerialUSB.println(tailItem);
+        SerialUSB.println("nextItem: ");
+        SerialUSB.println(nextItem);
+        #endif
 
-                executeCommand(tailItem, nextItem);
+        executeCommand(tailItem, nextItem);
             }
         }
-             // see if we are in a move or not
-            if (isTrajectoryExecuting){
-            // we are in a move, let's calc the next position
-            float timeSinceStartingTrajectoryInSeconds = (millis() - plannerStartingMovementTimeStamp) / 1000.0f;
-            RuntimePlanner(timeSinceStartingTrajectoryInSeconds);
-            motor->target = Y_;
+            
+            // see if we are in a move or not
+        if (isTrajectoryExecuting){
+        // we are in a move, let's calc the next position
+        float timeSinceStartingTrajectoryInSeconds = (millis() - plannerStartingMovementTimeStamp) / 1000.0f;
+        RuntimePlanner(timeSinceStartingTrajectoryInSeconds);
+        motor->target = Y_;
 
-            float EventHorizon =    0.1f; // 100ms
+        float EventHorizon =    0.1f; // 100ms
 
-             if (!buffer.isEmpty() && !m400_flag && timeSinceStartingTrajectoryInSeconds >= ((t1 + t2) - EventHorizon)){
+            if (!buffer.isEmpty() && !m400_flag && timeSinceStartingTrajectoryInSeconds >= ((t1 + t2) - EventHorizon)){
+            
+            buffer.pop(tailItem, nextItem);
+            
+            executeCommand(tailItem, nextItem);
 
-               
-                   
-                   buffer.pop(tailItem, nextItem);
-                  
-                   executeCommand(tailItem, nextItem);
             }
 
 
 
-            // see if we are done with our move
-            if (timeSinceStartingTrajectoryInSeconds >= Tf){
-                // we are done with move
-                // motor.monitor_downsample = 0; // disable monitor
-                #ifdef __debug
-                SerialUSB.println("Done with move");
-                #endif 
+        // see if we are done with our move
+        if (timeSinceStartingTrajectoryInSeconds >= Tf){
+            // we are done with move
+            // motor.monitor_downsample = 0; // disable monitor
+            #ifdef __debug
+            SerialUSB.println("Done with move");
+            #endif 
 
-                SerialUSB.println("ok");
-                float map_pos = mapfloat(motor->shaft_angle, 0, 2*PI, 0, buffer.mm_per_rev);
-                SerialUSB.print("X:");
-                SerialUSB.println(map_pos, 4);
-                SerialUSB.print("Shaft angle:");
-                SerialUSB.println(motor->shaft_angle, 4);
+            SerialUSB.println("ok");
+            float map_pos = mapfloat(motor->shaft_angle, 0, 2*PI, 0, buffer.mm_per_rev);
+            SerialUSB.print("X:");
+            SerialUSB.println(map_pos, 4);
+            SerialUSB.print("Shaft angle:");
+            SerialUSB.println(motor->shaft_angle, 4);
 
-               
-                isTrajectoryExecuting = false;
+            
+            isTrajectoryExecuting = false;
                 
-                 if (m400_flag){
-                 Serial.println("ok");
-                 m400_flag = false;
+            if (m400_flag){
+            Serial.println("ok");
+            m400_flag = false;}
 
-                }
-
-            
-
-           
-            
-             }
-         }
-     }
-
+      }
+    }
+  }
 }
 
 
