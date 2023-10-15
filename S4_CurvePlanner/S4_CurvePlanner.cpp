@@ -658,7 +658,7 @@ float S4_CurvePlanner::CalculateTa() {
 
      //vmax = (smax * Ts) * (Ts + Tj) * ((2 * Ts) + Tj + Ta);
     // Calculate Tv based on the velocity constraint (Equation 27)
-     Tv = (dmax / vmax) + ((4 * Ts) + (2 * Tj) + Ta);
+     Tv = ((qe - qs) / vmax) - ((4 * Ts) + (2 * Tj) + Ta);
 
      
          #ifdef __debug
@@ -668,8 +668,7 @@ float S4_CurvePlanner::CalculateTa() {
          SerialUSB.println(Tv);
          #endif
 
-    //vmax = (qe - qs) / Tv - (4 * Ts + 2 * Tj + Ta);
-
+    
     return Tv;
 }
 
