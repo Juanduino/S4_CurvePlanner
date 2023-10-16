@@ -703,13 +703,13 @@ float S4_CurvePlanner::CalculateTa(float Ts_, float Tj_) {
 
      //vmax = (smax * Ts) * (Ts + Tj) * ((2 * Ts) + Tj + Ta);
     // Calculate Tv based on the velocity constraint (Equation 27)
-     Tv_rampToCero = ((qe - qs) / vmax) - ((4 * Ts) + (2 * Tj) + Ta);
+     Tv_rampToCero = ((qe - qs) / vmax_rampToCero) - ((4 * Ts_rampToCero) + (2 * Tj_rampToCero) + Ta_rampToCero);
      
          #ifdef __debug
          SerialUSB.print("vmax");
          SerialUSB.println(vmax);
-         SerialUSB.print("Tv");
-         SerialUSB.println(Tv);
+         SerialUSB.print("Tv_rampToCero:");
+         SerialUSB.println(Tv_rampToCero);
          #endif
 
     return Tv_rampToCero;
@@ -817,17 +817,17 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         //Note: This is also essential if initial velocity is larger then 0. 
         if (double_decel_move || Vi_is_positive){
 
-            Ts_rampToCero = CalculateTs(Vmax_);
+        Ts_rampToCero = CalculateTs(Vmax_);
 
         if (Ts_rampToCero == Ts_d){
         // Move is constrained by distance only.
-            disp_void_rampToCero();}
+        disp_void_rampToCero();}
 
         if (Ts_rampToCero == Ts_v){
         // Move is constrained by velocity
-            vel_void_rampToCero();
-            Tv_rampToCero = CalculateTv();
-            }
+        vel_void_rampToCero();
+        Tv_rampToCero = CalculateTv();
+        }
 
         if (Ts_rampToCero == Ts_a){
         // Move is constrained by acceleration
@@ -835,21 +835,21 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         if (Ts_rampToCero == Tad){Tad_void();}
 
-        if (Ts_rampToCero == Tav){Tav_void();CalculateTv();}
+        if (Ts_rampToCero == Tav){Tav_void();CalculateTv_rampToCero();}
         }
 
         if (Ts_rampToCero == Ts_j){
-            //Move is constrained by jerk
+        //Move is constrained by jerk
             jerk_void();
 
-            Tj_rampToCero = CalculateTj(Ts_rampToCero, vmax_rampToCero);
-            // Choose the minimum Tj among the constraints
-            if (Tj == Tjd){
-            Tjd_void();
-            }else if(Tj == Tjv){
-            Tjv_void();
-            CalculateTv_rampToCero();
-            }else{
+        Tj_rampToCero = CalculateTj(Ts_rampToCero, vmax_rampToCero);
+        // Choose the minimum Tj among the constraints
+        if (Tj == Tjd){
+        Tjd_void();
+        }else if(Tj == Tjv){
+        Tjv_void();
+        CalculateTv_rampToCero();
+        }else{
             // Case 3: Calculate other time intervals or motion parameters
             #ifdef __debug
             SerialUSB.println("Case 3: Calculate Ta");

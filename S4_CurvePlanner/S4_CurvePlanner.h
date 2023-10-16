@@ -66,7 +66,7 @@ private:
     
 
     float CalculateTs(float vmax_);
-    float CalculateTj();
+    float CalculateTj(float Ts_jerk, float Tj_vmax);
     float CalculateTa(float Ts_, float Tj_);
     float CalculateTv();
     float findTf(float Ts, float Tj, float Ta, float Tv, float Td);
@@ -133,7 +133,9 @@ private:
     void vel_void();
     void vel_void_rampToCero();
     void acel_void();
+    void acel_void_rampToCero();
     void jerk_void();
+    void jerk_void_rampToCero();
     void Tjd_void();
     void Tjv_void();
     void Tad_void();
