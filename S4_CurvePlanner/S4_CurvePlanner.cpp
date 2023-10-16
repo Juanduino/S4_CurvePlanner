@@ -1436,7 +1436,7 @@ if (t >= t8 && t < t9) {
     tau9 = t - t8;
 
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = - (jmax / T9) * tau9;
     acel_now = - (jmax / (2.0f * T9)) * pow(tau9, 2);
     vel_target = - (jmax / (6.0f * T9)) * pow(tau9, 3) + v7;
@@ -1472,7 +1472,7 @@ if (t >= t9 && t < t10) {
 
     tau10 = t - t9;
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = -jmax;
     acel_now = -jmax * tau10 - (jmax / 2.0) * T9;
     vel_target = -(jmax / 2.0) * pow(tau10, 2) - (jmax / 2.0) * T9 * tau10 + v6;
@@ -1506,14 +1506,14 @@ if (t >= t10 && t < t11) {
 
     tau11 = t - t10;
     
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = - jmax + ((jmax / T11) * tau11);
-    acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T1 + (2 * T2));
-    vel_target = - (jmax / 2.0) * pow(tau11, 2) + (jmax / (6.0 * T11)) * pow(tau11, 3) - (jmax / 2.0) * (T1 + (2 * T2)) * tau11 + v5;
+    acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T9 + (2 * T10));
+    vel_target = - (jmax / 2.0) * pow(tau11, 2) + (jmax / (6.0 * T11)) * pow(tau11, 3) - (jmax / 2.0) * (T9 + (2 * T10)) * tau11 + v5;
     }else{
     jerk_now = - jmax_rampToCero + ((jmax_rampToCero / T11) * tau11);
-    acel_now = - (jmax_rampToCero * tau11) + (jmax_rampToCero / (2 * T11)) * pow(tau11, 2) - (jmax_rampToCero / 2) * (T1 + (2 * T2));
-    vel_target = - (jmax_rampToCero / 2.0) * pow(tau11, 2) + (jmax_rampToCero / (6.0 * T11)) * pow(tau11, 3) - (jmax / 2.0) * (T1 + (2 * T2)) * tau11 + v5;
+    acel_now = - (jmax_rampToCero * tau11) + (jmax_rampToCero / (2 * T11)) * pow(tau11, 2) - (jmax_rampToCero / 2) * (T9 + (2 * T10));
+    vel_target = - (jmax_rampToCero / 2.0) * pow(tau11, 2) + (jmax_rampToCero / (6.0 * T11)) * pow(tau11, 3) - (jmax / 2.0) * (T9 + (2 * T10)) * tau11 + v5;
     }
 
     //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
@@ -1543,7 +1543,7 @@ if (t >= t11 && t < t12) {
 
     tau12 = t - t12;
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = 0.0;
     acel_now = -amax;
     vel_target = -(amax * tau12) + v3;
@@ -1578,7 +1578,7 @@ if (t >= t12 && t < t13) {
 
     tau13 = t - t12;
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = jmax / T13 * tau13;
     acel_now =  (jmax / (2.0 * T13)) * pow(tau13, 2) - amax;
     vel_target = jmax / (6.0 * T13) * pow(tau13, 3) - amax * tau13 + v3;
@@ -1612,15 +1612,15 @@ if (t >= t13 && t < t14) {
     
     tau14 = t - t13;
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = jmax;
-    acel_now = (jmax * tau14) - amax + (jmax / 2.0) * T5;
-    float tempt_cal = amax - (jmax / 2.0) * T5;
+    acel_now = (jmax * tau14) - amax + (jmax / 2.0) * T9;
+    float tempt_cal = amax - (jmax / 2.0) * T9;
     vel_target =   (jmax / 2.0) * pow(tau14, 2) - tempt_cal * tau14 + v2;
     }else{
     jerk_now = jmax_rampToCero;
-    acel_now = (jmax_rampToCero * tau14) - amax_rampToCero + (jmax_rampToCero / 2.0) * T5;
-    float tempt_cal_rampToCero = amax_rampToCero - (jmax_rampToCero / 2.0) * T5;
+    acel_now = (jmax_rampToCero * tau14) - amax_rampToCero + (jmax_rampToCero / 2.0) * T9;
+    float tempt_cal_rampToCero = amax_rampToCero - (jmax_rampToCero / 2.0) * T9;
     vel_target =   (jmax_rampToCero / 2.0) * pow(tau14, 2) - tempt_cal_rampToCero * tau14 + v2_rampToCero;
 
     }
@@ -1649,15 +1649,16 @@ if (t >= t14 && t < t15) {
 
     tau15 = t - t14;
 
-    if (!double_decel_move){
+    if (!double_decel_move || !Vi_is_positive){
     jerk_now = jmax - (jmax / T15) * tau15;
-    acel_now =  (jmax * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
-    vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T7)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v1;
+    acel_now =  (jmax * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax + ((jmax / 2.0) * T9) + (jmax * T10);
+    vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T15)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T9 - (jmax * T10)) * tau15 + v1;
     }else{
     jerk_now = jmax_rampToCero - (jmax_rampToCero / T15) * tau15;
-    acel_now =  (jmax_rampToCero * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax_rampToCero + ((jmax_rampToCero / 2.0) * T5) + (jmax_rampToCero * T6);
-    vel_target = (jmax_rampToCero / 2.0) * pow(tau15, 2) - (jmax_rampToCero / (6.0 * T7)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau15 + v1_rampToCero;
+    acel_now =  (jmax_rampToCero * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax_rampToCero + ((jmax_rampToCero / 2.0) * T9) + (jmax_rampToCero * T10);
+    vel_target = (jmax_rampToCero / 2.0) * pow(tau15, 2) - (jmax_rampToCero / (6.0 * T15)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T9 - (jmax * T10)) * tau15 + v1_rampToCero;
     }
+      
 
  
 #ifdef __debug
