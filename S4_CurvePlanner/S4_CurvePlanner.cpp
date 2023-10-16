@@ -815,6 +815,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         //If the initial velocity is higher then (new)max velocity. Ramp down to max velocity and then ramp down to 0. 
         //Note: This is also essential if initial velocity is larger then 0. 
+        //TODO: Handle cases where there are moves in buffer.
         if (double_decel_move || Vi_is_positive){
 
         Ts_rampToCero = CalculateTs(Vmax_);
@@ -861,9 +862,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 }   
 
         
-        //Tj = CalculateTj();
-        //Ta = CalculateTa();
-        //Tv = CalculateTv();
 
         #ifdef __debug
         SerialUSB.println("****************************");
