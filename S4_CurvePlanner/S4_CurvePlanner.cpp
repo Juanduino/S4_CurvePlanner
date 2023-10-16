@@ -1188,8 +1188,8 @@ if (t >= t1 && t < t2) {
     }else{
     float v6_2 = v6 + vmax;   
     jerk_now = -jmax;
-    acel_now = -jmax * tau2 - (jmax / 2.0) * T9;
-    vel_target = -(jmax / 2.0) * pow(tau2, 2) - (jmax / 2.0) * T9 * tau2 + v6_2;
+    acel_now = -jmax * tau2 - (jmax / 2.0) * T1;
+    vel_target = -(jmax / 2.0) * pow(tau2, 2) - (jmax / 2.0) * T1 * tau2 + v6_2;
     }
 
     
@@ -1223,9 +1223,9 @@ if (t >= t2 && t < t3) {
     vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
     }else{
     float v5_2 = v5 + vmax;   
-    jerk_now = - jmax + ((jmax / T11) * tau3);
-    acel_now = - (jmax * tau3) + (jmax / (2 * T11)) * pow(tau3, 2) - (jmax / 2) * (T1 + (2 * T2));
-    vel_target = - (jmax / 2.0) * pow(tau3, 2) + (jmax / (6.0 * T11)) * pow(tau3, 3) - (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v5_2;
+    jerk_now = - jmax + ((jmax / T3) * tau3);
+    acel_now = - (jmax * tau3) + (jmax / (2 * T3)) * pow(tau3, 2) - (jmax / 2) * (T3 + (2 * T4));
+    vel_target = - (jmax / 2.0) * pow(tau3, 2) + (jmax / (6.0 * T3)) * pow(tau3, 3) - (jmax / 2.0) * (T3 + (2 * T4)) * tau3 + v5_2;
     }
     //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
 
@@ -1294,9 +1294,9 @@ if (t >= t4 && t < t5) {
     vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
     } else {
     float v3_2 = v3 + vmax;
-    jerk_now = jmax / T13 * tau5;
-    acel_now =  (jmax / (2.0 * T13)) * pow(tau5, 2) - amax;
-    vel_target = jmax / (6.0 * T13) * pow(tau5, 3) - amax * tau5 + v3_2;
+    jerk_now = jmax / T5 * tau5;
+    acel_now =  (jmax / (2.0 * T5)) * pow(tau5, 2) - amax;
+    vel_target = jmax / (6.0 * T5) * pow(tau5, 3) - amax * tau5 + v3_2;
     }
 
     //pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
@@ -1367,8 +1367,8 @@ if (t >= t6 && t < t7) {
     vel_target = - (jmax / 2.0) * pow(tau7, 2) + (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v6;
     }else{
     float v1_2 = v1 + vmax;
-    jerk_now = jmax - (jmax / T15) * tau7;
-    acel_now =  (jmax * tau7) - ((jmax / (2.0 * T15)) * pow(tau7, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
+    jerk_now = jmax - (jmax / T7) * tau7;
+    acel_now =  (jmax * tau7) - ((jmax / (2.0 * T7)) * pow(tau7, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
     vel_target = (jmax / 2.0) * pow(tau7, 2) - (jmax / (6.0 * T7)) * pow(tau7, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v1_2;
     }
 
