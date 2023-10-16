@@ -953,6 +953,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T6 = Tj;
          T7 = Ts;
          T8 = Tv;
+
+        if (!double_decel_move || !Vi_is_positive){
          T9 = Ts;
          T10 = Tj;
          T11 = Ts;
@@ -961,7 +963,16 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T14 = Tj;
          T15 = Ts;
 
+        }else{
 
+         T9 = Ts_rampToCero;
+         T10 = Tj_rampToCero;
+         T11 = Ts_rampToCero;
+         T12 = Tj_rampToCero;
+         T13 = Ts_rampToCero;
+         T14 = Tj_rampToCero;
+         T15 = Ts_rampToCero;
+        }
 
         // Print the time intervals
         #ifdef __debug
