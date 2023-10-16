@@ -503,6 +503,24 @@ float S4_CurvePlanner::CalculateTs(float vmax_) {
        
     }
 
+    
+    void S4_CurvePlanner::acel_void_rampToCero(){
+    
+        jmax_rampToCero = smax * Ts_a;
+        
+        #ifdef __debug
+        SerialUSB.print("jmax_rampToCero: ");
+        SerialUSB.println(jmax_rampToCero);
+        SerialUSB.print("amax: ");
+        SerialUSB.println(amax);
+        SerialUSB.print("vmax: ");
+        SerialUSB.println(vmax);
+         SerialUSB.print("smax: ");
+        SerialUSB.println(smax);
+        #endif
+       
+    }
+
 
     void S4_CurvePlanner::jerk_void(){
 
@@ -517,15 +535,15 @@ float S4_CurvePlanner::CalculateTs(float vmax_) {
         SerialUSB.println(smax);
         #endif
 
-        Tj = CalculateTj();
+        
     }
 
 
     
-float S4_CurvePlanner::CalculateTj() {
+float S4_CurvePlanner::CalculateTj(float Ts_jerk, float Tj_vmax) {
 
     // Calculate Tdj based on the displacement constraint (Equation 16)
-    float c = pow(Ts, 3);
+    float c = pow(Ts_jerk, 3);
     float d = (dmax * c) / (54.0f * jmax);
     float e = pow(dmax, 2) / (16.0f * pow(jmax, 2));
     float a = (c / 27.0f) + (dmax / (4.0f * jmax));
@@ -533,11 +551,11 @@ float S4_CurvePlanner::CalculateTj() {
     float Tjd = cbrt(a + b) + cbrt(a - b) + ((5.0f * Ts) / 3.0f); 
     
     // Calculate Tvj based on the velocity constraint (Equation 18)
-    float Tjv = sqrt((pow(Ts, 2) / 4) + (vmax / jmax)) - ((3 * Ts) / 2);
+    float Tjv = sqrt((pow(Ts_jerk, 2) / 4) + (Tj_vmax / jmax)) - ((3 * Ts_jerk) / 2);
 
 
     // Calculate Taj based on the acceleration constraint (Equation 20)
-    float Tja = (amax / jmax) - Ts;
+    float Tja = (amax / jmax) - Ts_jerk;
 
  
      #ifdef __debug
@@ -777,8 +795,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         if (Ts == Ts_j){
             //Move is constrained by jerk
             jerk_void();
-            //Calculate Tv
-            Tj = CalculateTv();
+
+            Tj = CalculateTj(Ts, vmax);
             // Choose the minimum Tj among the constraints
             if (Tj == Tjd){
             Tjd_void();
@@ -813,19 +831,32 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         if (Ts_rampToCero == Ts_a){
         // Move is constrained by acceleration
-            acel_void();
-            Ta_rampToCero = CalculateTa(Ts_rampToCero, Tj_rampToCero);
+        acel_void();Ta_rampToCero = CalculateTa(Ts_rampToCero, Tj_rampToCero);
 
-        if (Ts_rampToCero == Tad){
-            Tad_void();
+        if (Ts_rampToCero == Tad){Tad_void();}
+
+        if (Ts_rampToCero == Tav){Tav_void();CalculateTv();}
         }
 
-        if (Ts_rampToCero == Tav){
-            Tav_void();
-            CalculateTv();
+        if (Ts_rampToCero == Ts_j){
+            //Move is constrained by jerk
+            jerk_void();
 
+            Tj_rampToCero = CalculateTj(Ts_rampToCero, vmax_rampToCero);
+            // Choose the minimum Tj among the constraints
+            if (Tj == Tjd){
+            Tjd_void();
+            }else if(Tj == Tjv){
+            Tjv_void();
+            CalculateTv_rampToCero();
+            }else{
+            // Case 3: Calculate other time intervals or motion parameters
+            #ifdef __debug
+            SerialUSB.println("Case 3: Calculate Ta");
+            #endif
+            Ta = CalculateTa(Ts_rampToCero, Tj_rampToCero);
+            }
         }
-    }
 
 }   
 
