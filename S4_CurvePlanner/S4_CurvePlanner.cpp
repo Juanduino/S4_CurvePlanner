@@ -900,6 +900,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          }
 
         // Calculate transition times for deceleration phase (symetrical to acceleration).
+
+        if (!double_decel_move || !Vi_is_positive){
          t9 = t8 + Ts;
          t10 = t9 + Tj;
          t11 = t10 + Ts;
@@ -907,6 +909,17 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          t13 = t12 + Ts;
          t14 = t13 + Tj;
          t15 = t14 + Ts;
+
+        }else{
+         
+         t9 = t8 + Ts_rampToCero;
+         t10 = t9 + Tj_rampToCero;
+         t11 = t10 + Ts_rampToCero;
+         t12 = t11 + Tj_rampToCero;
+         t13 = t12 + Ts_rampToCero;
+         t14 = t13 + Tj_rampToCero;
+         t15 = t14 + Ts_rampToCero;
+        }
 
 
         #ifdef __debug
