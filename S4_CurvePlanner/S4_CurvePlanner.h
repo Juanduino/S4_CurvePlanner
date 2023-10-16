@@ -20,6 +20,8 @@ public:
     float t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
     bool calculateVariables(float Xf, float Xi, float Vi, float Vmax_, float Amax_, float Jmax_, float Smax_);
     void RuntimePlanner(float currentTrajectoryTime);
+    bool double_decel_move = false;
+    bool Vi_is_positive = false;
 
 private:
     
@@ -49,11 +51,7 @@ private:
     float time_step_seconds;
     float last_time;
 
-    // Time segment intervals
-    float ts;
-    float tj;
-    float ta;
-    float tv;
+  
 
     float a0_, a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, a9_, a10_;
     float tau1, tau2, tau3, tau4, tau5, tau6, tau7, tau8, tau9, tau10, tau11, tau12, tau13, tau14, tau15;
@@ -67,9 +65,9 @@ private:
     float previous_acceleration;
     
 
-    float CalculateTs();
+    float CalculateTs(float vmax_);
     float CalculateTj();
-    float CalculateTa();
+    float CalculateTa(float Ts_, float Tj_);
     float CalculateTv();
     float findTf(float Ts, float Tj, float Ta, float Tv, float Td);
 
@@ -78,6 +76,34 @@ private:
     float vmax; // Max velocity
     float dmax; // Max displacemnt 
     float smax; // MAX snap
+
+    float v1_rampToCero, v2_rampToCero, v3_rampToCero, v6_rampToCero, v7_rampToCero;
+
+    //Variables for cases where ramp down is diferent from ramp up.
+    float jmax_rampToCero; // Max jerk
+    float amax_rampToCero; // Max acceleration
+    float vmax_rampToCero; // Max velocity
+
+    float ds_max;
+    float Ts_d;
+    float Ts_v;
+    float Ts_a;
+    float Ts_j;
+
+    float Tjv;
+    float Tjd;
+    float Tja;
+
+    float Tad;
+    float Tav;
+
+    float Ts_rampToCero;
+    float Ts_d_rampToCero;
+    float Tv_rampToCero;
+    float Ta_rampToCero;
+    float Tj_rampToCero;
+
+    float CalculateTv_rampToCero();
 
     float am, vm;
 
@@ -102,7 +128,16 @@ private:
     
 
     void Initiate_Move(float Pos);
-    
+    void disp_void();
+    void disp_void_rampToCero();
+    void vel_void();
+    void vel_void_rampToCero();
+    void acel_void();
+    void jerk_void();
+    void Tjd_void();
+    void Tjv_void();
+    void Tad_void();
+    void Tav_void();
 
     char* tailItem;
     char* nextItem;
