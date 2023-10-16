@@ -737,6 +737,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         //Ta = Vmax_ / Amax_ - Tj - 2 * Ts;
         //Tv = (qe - qs) / Vmax_ - Ta - 2 * Tj - 4 * Ts;
 
+        //Zero
         Ts = Ts_a = Ts_d = Ts_j = Ts_v = 0;
 
         if (vmax < 0){
@@ -752,11 +753,11 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         // Choose the minimum Ts among the constraints
         
         if (Ts == Ts_d){
-        // Move is restained by displayment only.
+        // Move is constrained by distance only.
             disp_void();}
 
         if (Ts == Ts_v){
-        // Move is restrained by velocity
+        // Move is constrained by velocity
             Ts = abs(Ts);
             vel_void();
             Tv = CalculateTv();
@@ -764,7 +765,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         if (Ts == Ts_a){
 
-        // Move is restrained by acceleration
+        // Move is constrained by acceleration
         acel_void();Ta = CalculateTa(Ts, Tj);
 
         if (Ta == Tad){Tad_void();}
@@ -774,7 +775,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         }
 
         if (Ts == Ts_j){
-            //Move is restricted by jerk
+            //Move is constrained by jerk
             jerk_void();
             //Calculate Tv
             Tj = CalculateTv();
@@ -801,17 +802,17 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
             Ts_rampToCero = CalculateTs(Vmax_);
 
         if (Ts_rampToCero == Ts_d){
-        // Move is restained by displayment only.
+        // Move is constrained by distance only.
             disp_void_rampToCero();}
 
         if (Ts_rampToCero == Ts_v){
-        // Move is restrained by velocity
+        // Move is constrained by velocity
             vel_void_rampToCero();
             Tv_rampToCero = CalculateTv();
             }
 
         if (Ts_rampToCero == Ts_a){
-        // Move is restrained by acceleration
+        // Move is constrained by acceleration
             acel_void();
             Ta_rampToCero = CalculateTa(Ts_rampToCero, Tj_rampToCero);
 
