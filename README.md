@@ -2,11 +2,11 @@
 
 In development - not testet at this moment. Code compiles. 
 
-This is a remake of the TrapezoidalPlanner class for the SimpleFOC library. This iteration calculates 4th order s-curve. 
+This libery calculates and executes 4th order S-curve motion. 
 
-4th order s-curve is divided into 15 time segments. 
+4th order S-curve is divided into 15 time segments. 
 
-The S-curve is a smoother motion profile than the trapez, since the acceleration and deceleration are curved.
+The S-curve is a smoother motion profile compared to the trapez, since acceleration and deceleration are curved.
 
 All the math for the 4th order planner was inspired by:
 
@@ -16,12 +16,13 @@ All the math for the 4th order planner was inspired by:
 
 
 Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
-and the planner will execute the commands in the order they were received. Therefore the planner will be able to execute varius G and M commands.
+and execute the commands in the order they were received. This will make the S4_CurvePlanner capable of handeling varius G and M commands.
+
 In order to use it with the SimpleFOC library, the planner will need to be created and linked in the main.cpp file, and the runPlannerOnTick() function will need to be called in the main loop.
 The commander is obviosly also needed. 
 
-We need to create a circularBuffer class in the same lib folder as the planner is #include "../CircularBuffer/CircularBuffer.h" 
-NOTE: The circular buffer class was a colaboration with GPTchat.
+We also have to create a circularBuffer class in the same lib folder as the planner is #include "../CircularBuffer/CircularBuffer.h" 
+The CircularBuffer folder is in this repo.
 
 This figure illustrates how the motion-profile is divided into 15 time segments.
 
