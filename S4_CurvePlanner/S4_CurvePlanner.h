@@ -22,6 +22,7 @@ public:
     void RuntimePlanner(float currentTrajectoryTime);
     bool double_decel_move = false;
     bool Vi_is_positive = false;
+    float last_time;
 
 private:
     
@@ -49,7 +50,12 @@ private:
     float time_step = 0.0f;
     float position_map;
     float time_step_seconds;
-    float last_time;
+    //float last_time;
+    float Last_position;
+    float last_velocity;
+    float last_acceleratio;
+    float now_;
+    float deltaTime;
 
     // Variable holders related to trajectory/time
     float a0_, a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, a9_, a10_;

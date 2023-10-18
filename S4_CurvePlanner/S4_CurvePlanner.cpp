@@ -377,6 +377,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
     // Step 4: Calculate Ts from jerk constraint
      Ts_j = sqrt(Ts_jmax / smax);
 
+
     #ifdef __debug
     SerialUSB.println("**********************");
     SerialUSB.println("CalculateTs variables:");
@@ -400,7 +401,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         vmax = (2 * amax) * Ts_d;
 
         #ifdef __debug
-         SerialUSB.print("dmax: ");
+        SerialUSB.print("dmax: ");
         SerialUSB.println(dmax);
         SerialUSB.print("jmax: ");
         SerialUSB.println(jmax);
@@ -418,7 +419,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         vmax_rampToCero = (2 * amax_rampToCero) * Ts_d;
 
         #ifdef __debug
-         SerialUSB.print("dmax: ");
+        SerialUSB.print("dmax: ");
         SerialUSB.println(dmax);
         SerialUSB.print("jmax_rampToCero: ");
         SerialUSB.println(jmax_rampToCero);
@@ -432,9 +433,6 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
 
      void S4_CurvePlanner::vel_void(){
 
-        if (Ts_v == Ts_a) {
-            Ts_a = 0;    }
-
         jmax = smax * Ts_v;
         amax = pow(Ts, 2) * smax; 
         #ifdef __debug
@@ -444,7 +442,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         SerialUSB.println(amax);
         SerialUSB.print("vmax: ");
         SerialUSB.println(vmax);
-         SerialUSB.print("smax: ");
+        SerialUSB.print("smax: ");
         SerialUSB.println(smax);
         #endif
 }
@@ -464,7 +462,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         SerialUSB.println(amax_rampToCero);
         SerialUSB.print("vmax_rampToCero: ");
         SerialUSB.println(vmax_rampToCero);
-         SerialUSB.print("smax_rampToCero: ");
+        SerialUSB.print("smax_rampToCero: ");
         SerialUSB.println(smax);
         #endif   
 }
@@ -482,7 +480,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         SerialUSB.println(amax);
         SerialUSB.print("vmax: ");
         SerialUSB.println(vmax);
-         SerialUSB.print("smax: ");
+        SerialUSB.print("smax: ");
         SerialUSB.println(smax);
         #endif
 }
@@ -499,7 +497,7 @@ void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
         SerialUSB.println(amax);
         SerialUSB.print("vmax: ");
         SerialUSB.println(vmax);
-         SerialUSB.print("smax: ");
+        SerialUSB.print("smax: ");
         SerialUSB.println(smax);
         #endif
 }
@@ -529,7 +527,7 @@ float S4_CurvePlanner::CalculateTj(float Ts_jerk, float Tj_vmax, float Tj_jmax, 
     float e = pow(dmax, 2) / (16.0f * pow(Tj_jmax, 2));
     float a = (c / 27.0f) + (dmax / (4.0f * Tj_jmax));
     float b = sqrt(d + e);
-    float Tjd = cbrt(a + b) + cbrt(a - b) + ((5.0f * Ts) / 3.0f); 
+    float Tjd = cbrt(a + b) + cbrt(a - b) + ((5.0f * Ts_jerk) / 3.0f); 
     
     // Calculate Tvj based on the velocity constraint (Equation 18)
     float Tjv = sqrt((pow(Ts_jerk, 2) / 4) + (Tj_vmax / Tj_jmax)) - ((3 * Ts_jerk) / 2);
@@ -665,7 +663,6 @@ float S4_CurvePlanner::CalculateTa(float Ts_, float Tj_, float amax_, float vmax
 
 
     float S4_CurvePlanner::CalculateTv_rampToCero(){
-
      //vmax = (smax * Ts) * (Ts + Tj) * ((2 * Ts) + Tj + Ta);
     // Calculate Tv based on the velocity constraint (Equation 27)
      Tv_rampToCero = ((qe - qs) / vmax_rampToCero) - ((4 * Ts_rampToCero) + (2 * Tj_rampToCero) + Ta_rampToCero);
@@ -867,8 +864,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         #endif
  
 
-        
-
         // Calculate the maximum motion parameters
         //jmax = smax * Ts;
         //amax = smax * Ts * (Ts + Tj);
@@ -893,8 +888,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         // Calculate transition times for deceleration phase (symetrical to acceleration).
 
         if (double_decel_move || Vi_is_positive){
-         
-        
          t9 = t8 + Ts_rampToCero;
          t10 = t9 + Tj_rampToCero;
          t11 = t10 + Ts_rampToCero;
@@ -902,9 +895,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          t13 = t12 + Ts_rampToCero;
          t14 = t13 + Tj_rampToCero;
          t15 = t14 + Ts_rampToCero;
-
         }else{
-         
          t9 = t8 + Ts;
          t10 = t9 + Tj;
          t11 = t10 + Ts;
@@ -912,10 +903,7 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          t13 = t12 + Ts;
          t14 = t13 + Tj;
          t15 = t14 + Ts;
-
         }
-
-
 
 
         #ifdef __debug
@@ -937,7 +925,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("t14: "); SerialUSB.println(t14);
         SerialUSB.print("t15: "); SerialUSB.println(t15);
         #endif
-
         
         /*************************************/
         // Asign duration values for T1 to T15
@@ -951,7 +938,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T8 = Tv;
 
         if (double_decel_move || Vi_is_positive){
-       
          T9 = Ts_rampToCero;
          T10 = Tj_rampToCero;
          T11 = Ts_rampToCero;
@@ -960,19 +946,16 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T14 = Tj_rampToCero;
          T15 = Ts_rampToCero;
 
-         
         #ifdef __debug
-        SerialUSB.print("T9: "); SerialUSB.println(T9);
-        SerialUSB.print("T10: "); SerialUSB.println(T10);
-        SerialUSB.print("T11: "); SerialUSB.println(T11);
-        SerialUSB.print("T12: "); SerialUSB.println(T12);
-        SerialUSB.print("T13: "); SerialUSB.println(T13);
-        SerialUSB.print("T14: "); SerialUSB.println(T14);
-        SerialUSB.print("T15: "); SerialUSB.println(T15);
+         SerialUSB.print("T9: "); SerialUSB.println(T9);
+         SerialUSB.print("T10: "); SerialUSB.println(T10);
+         SerialUSB.print("T11: "); SerialUSB.println(T11);
+         SerialUSB.print("T12: "); SerialUSB.println(T12);
+         SerialUSB.print("T13: "); SerialUSB.println(T13);
+         SerialUSB.print("T14: "); SerialUSB.println(T14);
+         SerialUSB.print("T15: "); SerialUSB.println(T15);
         #endif
-
         }else{
-
          T9 = Ts;
          T10 = Tj;
          T11 = Ts;
@@ -980,8 +963,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
          T13 = Ts;
          T14 = Tj;
          T15 = Ts;
-
-  
         }
 
         // Print the time intervals
@@ -1009,31 +990,23 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         //Calculate Notations
         v1 = vs + (jmax / 6.0) * pow(T1, 2); 
-        q1 = (vs * T1) + (jmax / 24.0) * pow(T1, 3);
+        q1 = (qs * T1) + ((jmax / 24.0) * pow(T1, 3));
 
-      
         v2 = v1 + (jmax / 2.0) * (T2 * (T1 + T2));
         q2 = q1 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
-
       
         v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
         q3 = q2 + (jmax / 8.0) * pow(T3, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
-        
         v4 = v3 + (amax * T4);
-        q4 = q3 + (jmax / 2.0) * pow(T4, 2) + (v3 * T4);
+        q4 = q3 + (amax / 2.0) * pow(T4, 2) + (v3 * T4);
 
-      
         v5 = v4 - (jmax / 6.0) * pow(T5, 2) + (amax * T5);
         q5 = q4 - ((jmax / 24.0) * pow(T5, 3)) + ((amax / 2.0) * pow(T5, 2)) + (v4 * T5);
 
-
-         
         v6 = v5 - (jmax / 2.0) * pow(T6, 2) + (amax - (jmax / 2.0) * T5) * T6;
-        //q6 = q5 + (((6 * amax) - (jmax / 2.0) * T5) * pow(T6, 2) / 2.0);
         q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + v5 * T6;
         
-       
         v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
         q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
 
@@ -1047,7 +1020,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         //If dual-deceleration and if Vi (initial valocity) is positive, calculate now velocities for ramp-dowm
         if (double_decel_move || Vi_is_positive){
-
         v1_rd = 0.0f + (jmax_rampToCero / 6.0) * pow(T9, 2);
         v2_rd = v1_rd + (jmax_rampToCero / 2.0) * (T10 * (T9 + T10));
         v3_rd = v2_rd + (jmax_rampToCero / 6.0) * T11 * ((3 * T9) + (6 * T10) + (2 * T11));
@@ -1055,8 +1027,8 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         v5_rd = v4_rd - (jmax_rampToCero / 6.0) * pow(T13, 2) + (amax_rampToCero * T13);
         v6_rd = v5_rd - (jmax_rampToCero / 2.0) * pow(T14, 2) + (amax_rampToCero - (jmax_rampToCero / 2.0) * T13) * T14;
         v7_rd = v6_rd - (jmax_rampToCero / 3.0) * pow(T15, 2) + (amax_rampToCero - ((jmax_rampToCero / 2.0) * T13) - (jmax_rampToCero * T14)) * T15;
-
         
+        #ifdef __debug
         SerialUSB.print("v1_rd: "); SerialUSB.println(v1_rd);
         SerialUSB.print("v2_rd: "); SerialUSB.println(v2_rd);
         SerialUSB.print("v3_rd: "); SerialUSB.println(v3_rd);
@@ -1064,10 +1036,10 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("v5_rd: "); SerialUSB.println(v5_rd);
         SerialUSB.print("v6_rd: "); SerialUSB.println(v6_rd);
         SerialUSB.print("v7_rd: "); SerialUSB.println(v7_rd);
-
+        #endif
         }
 
-
+        #ifdef __debug
         SerialUSB.print("vs: "); SerialUSB.println(vs);
         SerialUSB.print("v1: "); SerialUSB.println(v1);
         SerialUSB.print("v2: "); SerialUSB.println(v2);
@@ -1077,7 +1049,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("v6: "); SerialUSB.println(v6);
         SerialUSB.print("v7: "); SerialUSB.println(v7);
         
-
         SerialUSB.print("qs: "); SerialUSB.println(qs);
         SerialUSB.print("q1: "); SerialUSB.println(q1);
         SerialUSB.print("q2: "); SerialUSB.println(q2);
@@ -1089,6 +1060,11 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("q8: "); SerialUSB.println(q8);
         SerialUSB.print("q9: "); SerialUSB.println(q9);
         SerialUSB.print("q9: "); SerialUSB.println(q10);
+        #endif
+
+        //last_time = 0.0f;
+        last_velocity = Vi;
+        Last_position = Xi;
 
         return true;
 }
@@ -1150,19 +1126,27 @@ float S4_CurvePlanner::findTf(float Ts, float Tj, float Ta, float Tv, float Td) 
 
 
 
-void S4_CurvePlanner::RuntimePlanner(float t) {
-    
-     //float currentTrajectoryTime = (millis() - plannerStartingMov
+void S4_CurvePlanner::RuntimePlanner(float t) {  
+//float currentTrajectoryTime = (millis() - plannerStartingMov
   
 if (t >= t0 && t < t1) {
 // Code for the [t0, t1] time range
 
+    
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau1 = t - t0;
+
 
     if (!double_decel_move){
     jerk_now = jmax / T1 * tau1;
     acel_now = (jmax / (2.0f * T1)) * pow(tau1, 2);
     vel_target = (jmax / (6.0f * T1)) * pow(tau1, 3) + vs;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     float v7_2 = v7 + vmax;
     jerk_now = - (jmax / T1) * tau1;
@@ -1170,8 +1154,10 @@ if (t >= t0 && t < t1) {
     vel_target = - (jmax / (6.0f * T1)) * pow(tau1, 3) + v7_2;
     }
 
-    //pos_target = (jmax / (24.0f * T1)) * pow(tau1, 4) + (vs * tau1) + qs;
-
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
     
     #ifdef __debug
     print_debug_variables();
@@ -1189,7 +1175,7 @@ if (t >= t1 && t < t2) {
     jerk_now = jmax;
     acel_now = jmax * tau2 + (jmax / 2.0) * T1;
     vel_target = (jmax / 2.0) * pow(tau2, 2) + (jmax / 2.0) * T1 * tau2 + v1;
-    pos_target = (jmax / 6.0) * pow(tau2, 3) + (jmax / 4) * T1 * pow(tau2, 2) + (v1 *tau2) + q1; 
+    pos_target = ((jmax / 6.0) * pow(tau2, 3)) + ((jmax / 4) * T1 * pow(tau2, 2)) + (v1 *tau2) + q1; 
     }else{
     float v6_2 = v6 + vmax;   
     jerk_now = -jmax;
@@ -1208,21 +1194,32 @@ if (t >= t1 && t < t2) {
 if (t >= t2 && t < t3) {
 // Code for the [t2, t3] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau3 = t - t2;
     tau4 = t - t3;
     
     if (!double_decel_move){
     jerk_now = jmax - (jmax / T3) * tau3;
     acel_now = (jmax * tau3) - (jmax / (2 * T3)) * pow(tau3, 2) + (jmax / 2) * (T1 + (2 * T2));
-    vel_target = (jmax / 2.0) * pow(tau3, 2) - (jmax / (6.0 * T3)) * pow(tau3, 3) + (jmax / 2.0) * (T1 + (2 * T2)) * tau3 + v2;
+    vel_target = (jmax / 2.0f) * pow(tau3, 2) - (jmax / (6.0f * T3)) * pow(tau3, 3) + (jmax / 2.0f) * (T1 + (2 * T2)) * tau3 + v2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
+    
     }else{
     float v5_2 = v5 + vmax;   
     jerk_now = - jmax + ((jmax / T3) * tau3);
     acel_now = - (jmax * tau3) + (jmax / (2 * T3)) * pow(tau3, 2) - (jmax / 2) * (T3 + (2 * T4));
-    vel_target = - (jmax / 2.0) * pow(tau3, 2) + (jmax / (6.0 * T3)) * pow(tau3, 3) - (jmax / 2.0) * (T3 + (2 * T4)) * tau3 + v5_2;
+    vel_target = - (jmax / 2.0) * pow(tau3, 2) + ((jmax / (6.0 * T3)) * pow(tau3, 3)) - ((jmax / 2.0) * (T3 + (2 * T4))) * tau3 + v5_2;
     }
-    //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
-
+   
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1257,12 +1254,21 @@ if (t >= t3 && t < t4) {
 if (t >= t4 && t < t5) {
 // Code for the [t4, t5] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau5 = t - t4;
 
     if (!double_decel_move){
     jerk_now = - (jmax / T5) * tau5;
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
     vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
+    //pos_target = - (jmax / (24.0 * T5) * pow(tau5, 4)) + ((amax / 2.0) * pow(tau5, 2)) + q4;
+    //pos_target = Last_position + (0.5f * (vel_target + last_velocity)) * deltaTime;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     } else {
     float v3_2 = v3 + vmax;
     jerk_now = jmax / T5 * tau5;
@@ -1270,8 +1276,11 @@ if (t >= t4 && t < t5) {
     vel_target = jmax / (6.0 * T5) * pow(tau5, 3) - amax * tau5 + v3_2;
     }
 
-    //pos_target = - (jmax / (24.0 * T5)) * pow(tau5, 4) + (amax / 2.0) * pow(tau5, 2) + q4;
-
+    
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
 
     #ifdef __debug
@@ -1311,10 +1320,17 @@ if (t >= t6 && t < t7) {
 
     tau7 = t - t6;
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     if (!double_decel_move){
     jerk_now = - jmax + ((jmax / T7) * tau7);
     acel_now = - (jmax * tau7) + ((jmax / (2.0 * T7)) * pow(tau7, 2)) + amax - ((jmax / 2.0) * T5) - (jmax * T6);
     vel_target = - (jmax / 2.0) * pow(tau7, 2) + (jmax / (6.0 * T7)) * pow(tau7, 3) + (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v6;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     float v1_2 = v1 + vmax;
     jerk_now = jmax - (jmax / T7) * tau7;
@@ -1322,7 +1338,11 @@ if (t >= t6 && t < t7) {
     vel_target = (jmax / 2.0) * pow(tau7, 2) - (jmax / (6.0 * T7)) * pow(tau7, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v1_2;
     }
 
-    //pos_target = -(jmax / 6.0) * pow(tau7, 3) - ((jmax / (24 * T7)) * pow(tau7, 4)) + (((2 * amax) - jmax * T5 - (2 * jmax) * T1) / 4) * pow(tau7, 2) + v6 * tau7 + q6;
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1335,13 +1355,23 @@ if (t >= t7 && t < t8) {
 
     tau8 = t - t7;
 
+     now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     // Use v7 and q7 as needed for further calculations
     // j(t) and a(t) are both 0 within this range
     jerk_now = 0.0f;
     acel_now = 0.0f;
     vel_target = v7;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
 
-    pos_target = v7 * tau8 + q7;
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1352,20 +1382,31 @@ if (t >= t7 && t < t8) {
 if (t >= t8 && t < t9) {
 // Code for the [t8, t9] time range
 
+    now_ = micros();
+    //deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau9 = t - t8;
 
     if (!double_decel_move && !Vi_is_positive){
     jerk_now = - (jmax / T9) * tau9;
     acel_now = - (jmax / (2.0f * T9)) * pow(tau9, 2);
     vel_target = - (jmax / (6.0f * T9)) * pow(tau9, 3) + v7;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     //Execute ramp down to 0 velocity
     jerk_now = - (jmax_rampToCero / T9) * tau9;
     acel_now = - (jmax_rampToCero / (2.0f * T9)) * pow(tau9, 2);
     vel_target = - (jmax_rampToCero / (6.0f * T9)) * pow(tau9, 3) + v7_rd;
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
     
-     //float position_map = q6 + v6 * tau7 + (0.5 * a6_) * pow(tau7, 2) + (jerk_now * pow(tau7, 3) / 6);
 
     #ifdef __debug
     print_debug_variables();
@@ -1396,6 +1437,11 @@ if (t >= t9 && t < t10) {
 
 if (t >= t10 && t < t11) {
 // Code for the [t10, t11] time range
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
 
     tau11 = t - t10;
     
@@ -1403,13 +1449,19 @@ if (t >= t10 && t < t11) {
     jerk_now = - jmax + ((jmax / T11) * tau11);
     acel_now = - (jmax * tau11) + (jmax / (2 * T11)) * pow(tau11, 2) - (jmax / 2) * (T9 + (2 * T10));
     vel_target = - (jmax / 2.0) * pow(tau11, 2) + (jmax / (6.0 * T11)) * pow(tau11, 3) - (jmax / 2.0) * (T9 + (2 * T10)) * tau11 + v5;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
+    
     }else{
     jerk_now = - jmax_rampToCero + ((jmax_rampToCero / T11) * tau11);
     acel_now = - (jmax_rampToCero * tau11) + (jmax_rampToCero / (2 * T11)) * pow(tau11, 2) - (jmax_rampToCero / 2) * (T9 + (2 * T10));
     vel_target = - (jmax_rampToCero / 2.0) * pow(tau11, 2) + (jmax_rampToCero / (6.0 * T11)) * pow(tau11, 3) - (jmax_rampToCero / 2.0) * (T9 + (2 * T10)) * tau11 + v5_rd;
     }
 
-    //pos_target = (jmax / 6.0) * pow(tau3, 3) - (jmax / (6 * T3)) * pow(tau4, 3) + (jmax / 4.0) * (T1 + (2 * T2)) * pow(tau3, 2) + (v2 * tau3) + q2; 
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
+
     
     #ifdef __debug
     print_debug_variables();
@@ -1442,18 +1494,30 @@ if (t >= t11 && t < t12) {
 if (t >= t12 && t < t13) {
 // Code for the [t12, t13] time range
 
+    now_ = micros();
+    //deltaTime = now_ - last_time;
+    
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;   
+    deltaTime = 0.025f;
+
     tau13 = t - t12;
 
     if (!double_decel_move && !Vi_is_positive){
     jerk_now = jmax / T13 * tau13;
     acel_now =  (jmax / (2.0 * T13)) * pow(tau13, 2) - amax;
     vel_target = jmax / (6.0 * T13) * pow(tau13, 3) - amax * tau13 + v3;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     jerk_now = jmax_rampToCero / T13 * tau13;
     acel_now =  (jmax_rampToCero / (2.0 * T13)) * pow(tau13, 2) - amax_rampToCero;
     vel_target = jmax_rampToCero / (6.0 * T13) * pow(tau13, 3) - amax_rampToCero * tau13 + v3_rd;
     }
 
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1471,6 +1535,7 @@ if (t >= t13 && t < t14) {
     acel_now = (jmax * tau14) - amax + (jmax / 2.0) * T9;
     float tempt_cal = amax - (jmax / 2.0) * T9;
     vel_target =   (jmax / 2.0) * pow(tau14, 2) - tempt_cal * tau14 + v2;
+    
     }else{
     jerk_now = jmax_rampToCero;
     acel_now = (jmax_rampToCero * tau14) - amax_rampToCero + (jmax_rampToCero / 2.0) * T9;
@@ -1488,17 +1553,30 @@ if (t >= t13 && t < t14) {
 if (t >= t14 && t < t15) {
 // Code for the [t14, t15] time range
 
+    now_ = micros();
+    //deltaTime = now_ - last_time;
+    
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau15 = t - t14;
 
     if (!double_decel_move && !Vi_is_positive){
     jerk_now = jmax - (jmax / T15) * tau15;
     acel_now =  (jmax * tau15) - ((jmax / (2.0 * T15)) * pow(tau15, 2)) - amax + ((jmax / 2.0) * T9) + (jmax * T10);
     vel_target = (jmax / 2.0) * pow(tau15, 2) - (jmax / (6.0 * T15)) * pow(tau15, 3) - (amax - (jmax / 2.0) * T9 - (jmax * T10)) * tau15 + v1;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     jerk_now = jmax_rampToCero - (jmax_rampToCero / T15) * tau15;
     acel_now =  (jmax_rampToCero * tau15) - ((jmax_rampToCero / (2.0 * T15)) * pow(tau15, 2)) - amax_rampToCero + ((jmax_rampToCero / 2.0) * T9) + (jmax_rampToCero * T10);
     vel_target = (jmax_rampToCero / 2.0) * pow(tau15, 2) - (jmax_rampToCero / (6.0 * T15)) * pow(tau15, 3) - (amax_rampToCero - (jmax_rampToCero / 2.0) * T9 - (jmax * T10)) * tau15 + v1_rd;
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1510,16 +1588,16 @@ if (t >= t14 && t < t15) {
 void S4_CurvePlanner::print_debug_variables(){
 
     SerialUSB.print("jerk_now:");
-    SerialUSB.print(jerk_now);
+    SerialUSB.print(jerk_now, 5);
     SerialUSB.print(",");
     SerialUSB.print("acel_now:");
-    SerialUSB.print(acel_now);
+    SerialUSB.print(acel_now, 5);
     SerialUSB.print(",");
     SerialUSB.print("vel_target:");
     SerialUSB.print(vel_target, 5);
     SerialUSB.print(",");
     SerialUSB.print("pos_target:");
-    SerialUSB.print(pos_target);
+    SerialUSB.print(pos_target, 5);
     SerialUSB.println(",");
 }
 
