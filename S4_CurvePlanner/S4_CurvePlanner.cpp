@@ -990,35 +990,27 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
 
         //Calculate Notations
         v1 = vs + (jmax / 6.0) * pow(T1, 2); 
-        q1 = (qs * T1) + ((jmax / 24.0) * pow(T1, 3));
 
         v2 = v1 + (jmax / 2.0) * (T2 * (T1 + T2));
-        q2 = q1 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
       
         v3 = v2 + (jmax / 6.0) * T3 * ((3 * T1) + (6 * T2) + (2 * T3));
-        q3 = q2 + (jmax / 8.0) * pow(T3, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
         v4 = v3 + (amax * T4);
-        q4 = q3 + (amax / 2.0) * pow(T4, 2) + (v3 * T4);
 
         v5 = v4 - (jmax / 6.0) * pow(T5, 2) + (amax * T5);
-        q5 = q4 - ((jmax / 24.0) * pow(T5, 3)) + ((amax / 2.0) * pow(T5, 2)) + (v4 * T5);
 
         v6 = v5 - (jmax / 2.0) * pow(T6, 2) + (amax - (jmax / 2.0) * T5) * T6;
-        q6 = q5 + (((6 * amax) - ((3 * jmax) * T5) - ((2 * jmax) * T6)) / 12) * pow(T6, 2) + v5 * T6;
-        
+      
         v7 = v6 - (jmax / 3.0) * pow(T7, 2) + (amax - ((jmax / 2.0) * T5) - (jmax * T6)) * T7;
-        q7 = q6 - (jmax / 8.0) * pow(T7, 3) + ((2.0 * amax) - (jmax * T5) - ((2.0 * jmax) * T6) * pow(T7, 2));
+
 
         // If vs (initial velocity) > 0, calculate ramp down within same jerk/acceleration constrains. This may lead to position overshoot, but is only the outcome of missing commands.
         // In essence this is just a failsafe if the algorithm recieves a new position command with a unrealistic ramp-dowm, while in motion. 
         // If Tv (time in cruice) exist, then we can subtract the time difference and hit the same target. 
         // If initial velocity is greater then cruice, do a dual-ramp-dowm. 
-        q8 = (v7 * T8) + (jmax / 24.0) * pow(T8, 3);
-        q9 = q8 + (jmax / 12.0) * pow(T2, 2) * ((2 * T2) + (3 * T1)) + (v1 * T2);
-        q10 = q9 - (jmax / 8.0) * pow(T11, 2) * ((2 * T1) + (4 * T2) + T3) + (v2 * T3);
 
-        //If dual-deceleration and if Vi (initial valocity) is positive, calculate now velocities for ramp-dowm
+   
+        //If dual-deceleration and if Vi (initial valocity) is positive, calculate new velocities for ramp-dowm
         if (double_decel_move || Vi_is_positive){
         v1_rd = 0.0f + (jmax_rampToCero / 6.0) * pow(T9, 2);
         v2_rd = v1_rd + (jmax_rampToCero / 2.0) * (T10 * (T9 + T10));
