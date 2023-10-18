@@ -32,7 +32,7 @@ This figure illustrates how the motion-profile is divided into 15 time segments.
 Here is a move restricted by jerk. By streaching out the ramp, with the time in constant jerk, the acceleration takes longer. 
 It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 segments is requires.
 
-![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/jerk%20.png)
+![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/math%20checks%20out.png)
 
 
 [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)
