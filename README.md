@@ -5,6 +5,7 @@ In development - not testet at this moment. Code compiles.
 This libery calculates and executes 4th order S-curve motion. 
 
 4th order S-curve is divided into 15 time segments. 
+It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 segments is requires.
 
 The S-curve is a smoother motion profile compared to the trapez, since acceleration and deceleration are curved.
 
@@ -29,8 +30,8 @@ This figure illustrates how the motion-profile is divided into 15 time segments.
 ![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/Figure%203.png)
 
 
-Here is a move restricted by jerk. By streaching out the ramp, with the time in constant jerk, the acceleration takes longer. 
-It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 segments is requires.
+Here is a move to 200. Pos_target is calculated using deltaTime, velocity_now, last_velocity, acceleration_now, last_acceleration.
+
 
 ![alt text](https://github.com/Juanduino/S4_CurvePlanner/blob/main/Images/math%20checks%20out.png)
 
