@@ -1040,18 +1040,6 @@ bool S4_CurvePlanner::calculateVariables(float Xf, float Xi, float Vi, float Vma
         SerialUSB.print("v5: "); SerialUSB.println(v5);
         SerialUSB.print("v6: "); SerialUSB.println(v6);
         SerialUSB.print("v7: "); SerialUSB.println(v7);
-        
-        SerialUSB.print("qs: "); SerialUSB.println(qs);
-        SerialUSB.print("q1: "); SerialUSB.println(q1);
-        SerialUSB.print("q2: "); SerialUSB.println(q2);
-        SerialUSB.print("q3: "); SerialUSB.println(q3);
-        SerialUSB.print("q4: "); SerialUSB.println(q4);
-        SerialUSB.print("q5: "); SerialUSB.println(q5);
-        SerialUSB.print("q6: "); SerialUSB.println(q6);
-        SerialUSB.print("q7: "); SerialUSB.println(q7);
-        SerialUSB.print("q8: "); SerialUSB.println(q8);
-        SerialUSB.print("q9: "); SerialUSB.println(q9);
-        SerialUSB.print("q9: "); SerialUSB.println(q10);
         #endif
 
         //last_time = 0.0f;
@@ -1144,6 +1132,7 @@ if (t >= t0 && t < t1) {
     jerk_now = - (jmax / T1) * tau1;
     acel_now = - (jmax / (2.0f * T1)) * pow(tau1, 2);
     vel_target = - (jmax / (6.0f * T1)) * pow(tau1, 3) + v7_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     last_time = now_;
@@ -1161,21 +1150,32 @@ if (t >= t0 && t < t1) {
 if (t >= t1 && t < t2) {
 // Code for the [t1, t2] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau2 = t - t1;
 
     if (!double_decel_move){
     jerk_now = jmax;
     acel_now = jmax * tau2 + (jmax / 2.0) * T1;
     vel_target = (jmax / 2.0) * pow(tau2, 2) + (jmax / 2.0) * T1 * tau2 + v1;
-    pos_target = ((jmax / 6.0) * pow(tau2, 3)) + ((jmax / 4) * T1 * pow(tau2, 2)) + (v1 *tau2) + q1; 
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     float v6_2 = v6 + vmax;   
     jerk_now = -jmax;
     acel_now = -jmax * tau2 - (jmax / 2.0) * T1;
     vel_target = -(jmax / 2.0) * pow(tau2, 2) - (jmax / 2.0) * T1 * tau2 + v6_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
-    
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
+
     #ifdef __debug
     print_debug_variables();
     #endif
@@ -1193,7 +1193,6 @@ if (t >= t2 && t < t3) {
     deltaTime = 0.025f;
 
     tau3 = t - t2;
-    tau4 = t - t3;
     
     if (!double_decel_move){
     jerk_now = jmax - (jmax / T3) * tau3;
@@ -1206,6 +1205,7 @@ if (t >= t2 && t < t3) {
     jerk_now = - jmax + ((jmax / T3) * tau3);
     acel_now = - (jmax * tau3) + (jmax / (2 * T3)) * pow(tau3, 2) - (jmax / 2) * (T3 + (2 * T4));
     vel_target = - (jmax / 2.0) * pow(tau3, 2) + ((jmax / (6.0 * T3)) * pow(tau3, 3)) - ((jmax / 2.0) * (T3 + (2 * T4))) * tau3 + v5_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
    
     last_time = now_;
@@ -1221,21 +1221,32 @@ if (t >= t2 && t < t3) {
 if (t >= t3 && t < t4) {
 // Code for the [t3, t4] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau4 = t - t3;
 
     if (!double_decel_move){
     jerk_now = 0.0;
     acel_now = amax;
     vel_target = (amax * tau4) + v3;
-    pos_target = (amax / 2.0) * pow(tau4, 2) + (v3 * tau4) + q3;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
 
     float v3_3 = v3 + vmax;
     jerk_now = 0.0;
     acel_now = -amax;
     vel_target = -(amax * tau4) + v3_3;
-        
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;     
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
     
     #ifdef __debug
     print_debug_variables();
@@ -1258,14 +1269,13 @@ if (t >= t4 && t < t5) {
     jerk_now = - (jmax / T5) * tau5;
     acel_now = - (jmax / (2.0 * T5)) * pow(tau5, 2) + amax;
     vel_target = -jmax / (6.0 * T5) * pow(tau5, 3) + amax * tau5 + v4;
-    //pos_target = - (jmax / (24.0 * T5) * pow(tau5, 4)) + ((amax / 2.0) * pow(tau5, 2)) + q4;
-    //pos_target = Last_position + (0.5f * (vel_target + last_velocity)) * deltaTime;
     pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     } else {
     float v3_2 = v3 + vmax;
     jerk_now = jmax / T5 * tau5;
     acel_now =  (jmax / (2.0 * T5)) * pow(tau5, 2) - amax;
     vel_target = jmax / (6.0 * T5) * pow(tau5, 3) - amax * tau5 + v3_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     
@@ -1284,22 +1294,33 @@ if (t >= t4 && t < t5) {
 if (t >= t5 && t < t6) {
 // Code for the [t5, t6] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau6 = t - t5;
-    tau5 = t - t4;
     
     if (!double_decel_move){
     jerk_now = -jmax;
     acel_now = -(jmax * tau6) + amax - (jmax / 2.0) * T5;
     float tempt_cal = amax - (jmax / 2.0) * T5;
     vel_target =  - (jmax / 2.0) * pow(tau6, 2) + tempt_cal * tau6 + v5;
-    pos_target = - (jmax / 6.0) * pow(tau6, 3) + (1.0 / 2.0) * ((amax - (jmax / 2.0) * tau5) * pow(tau6, 2)) + v5 * tau6 + q5;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     } else {
     float v2_2 = v2 + vmax;
     jerk_now = jmax;
     acel_now = (jmax * tau6) - amax + (jmax / 2.0) * T5;
     float tempt_cal = amax - (jmax / 2.0) * T5;
     vel_target =   (jmax / 2.0) * pow(tau6, 2) - tempt_cal * tau6 + v2_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
     
     #ifdef __debug
     print_debug_variables();
@@ -1310,13 +1331,13 @@ if (t >= t5 && t < t6) {
 if (t >= t6 && t < t7) {
 // Code for the [t6, t7] time range
 
-    tau7 = t - t6;
-
     now_ = micros();
     deltaTime = now_ - last_time;
     //convert to seconds
     //deltaTime = deltaTime / 1e6f;
     deltaTime = 0.025f;
+
+    tau7 = t - t6;
 
     if (!double_decel_move){
     jerk_now = - jmax + ((jmax / T7) * tau7);
@@ -1328,6 +1349,7 @@ if (t >= t6 && t < t7) {
     jerk_now = jmax - (jmax / T7) * tau7;
     acel_now =  (jmax * tau7) - ((jmax / (2.0 * T7)) * pow(tau7, 2)) - amax + ((jmax / 2.0) * T5) + (jmax * T6);
     vel_target = (jmax / 2.0) * pow(tau7, 2) - (jmax / (6.0 * T7)) * pow(tau7, 3) - (amax - (jmax / 2.0) * T5 - (jmax * T6)) * tau7 + v1_2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
 
@@ -1345,13 +1367,13 @@ if (t >= t6 && t < t7) {
 if (t >= t7 && t < t8) {
 // Code for the [t7, t8] time range
 
-    tau8 = t - t7;
-
-     now_ = micros();
+    now_ = micros();
     deltaTime = now_ - last_time;
     //convert to seconds
     //deltaTime = deltaTime / 1e6f;
     deltaTime = 0.025f;
+
+    tau8 = t - t7;
 
     // Use v7 and q7 as needed for further calculations
     // j(t) and a(t) are both 0 within this range
@@ -1392,6 +1414,7 @@ if (t >= t8 && t < t9) {
     jerk_now = - (jmax_rampToCero / T9) * tau9;
     acel_now = - (jmax_rampToCero / (2.0f * T9)) * pow(tau9, 2);
     vel_target = - (jmax_rampToCero / (6.0f * T9)) * pow(tau9, 3) + v7_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     last_time = now_;
@@ -1408,18 +1431,30 @@ if (t >= t8 && t < t9) {
 
 if (t >= t9 && t < t10) {
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau10 = t - t9;
 
     if (!double_decel_move && !Vi_is_positive){
     jerk_now = -jmax;
     acel_now = -jmax * tau10 - (jmax / 2.0) * T9;
     vel_target = -(jmax / 2.0) * pow(tau10, 2) - (jmax / 2.0) * T9 * tau10 + v6;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     jerk_now = -jmax_rampToCero;
     acel_now = -jmax_rampToCero * tau10 - (jmax_rampToCero / 2.0) * T9;
     vel_target = -(jmax_rampToCero / 2.0) * pow(tau10, 2) - (jmax_rampToCero / 2.0) * T9 * tau10 + v6_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
         
     #ifdef __debug
     print_debug_variables();
@@ -1447,6 +1482,7 @@ if (t >= t10 && t < t11) {
     jerk_now = - jmax_rampToCero + ((jmax_rampToCero / T11) * tau11);
     acel_now = - (jmax_rampToCero * tau11) + (jmax_rampToCero / (2 * T11)) * pow(tau11, 2) - (jmax_rampToCero / 2) * (T9 + (2 * T10));
     vel_target = - (jmax_rampToCero / 2.0) * pow(tau11, 2) + (jmax_rampToCero / (6.0 * T11)) * pow(tau11, 3) - (jmax_rampToCero / 2.0) * (T9 + (2 * T10)) * tau11 + v5_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     last_time = now_;
@@ -1464,17 +1500,30 @@ if (t >= t10 && t < t11) {
 if (t >= t11 && t < t12) {
 // Code for the [t11, t12] time range
 
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau12 = t - t12;
 
     if (!double_decel_move && !Vi_is_positive){
     jerk_now = 0.0;
     acel_now = -amax;
     vel_target = -(amax * tau12) + v3;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }else{
     jerk_now = 0.0;
     acel_now = -amax_rampToCero;
     vel_target = -(amax_rampToCero * tau12) + v3_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
 
     #ifdef __debug
@@ -1504,6 +1553,7 @@ if (t >= t12 && t < t13) {
     jerk_now = jmax_rampToCero / T13 * tau13;
     acel_now =  (jmax_rampToCero / (2.0 * T13)) * pow(tau13, 2) - amax_rampToCero;
     vel_target = jmax_rampToCero / (6.0 * T13) * pow(tau13, 3) - amax_rampToCero * tau13 + v3_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     last_time = now_;
@@ -1519,7 +1569,13 @@ if (t >= t12 && t < t13) {
 
 if (t >= t13 && t < t14) {
 // Code for the [t13, t14] time range
-    
+
+    now_ = micros();
+    deltaTime = now_ - last_time;
+    //convert to seconds
+    //deltaTime = deltaTime / 1e6f;
+    deltaTime = 0.025f;
+
     tau14 = t - t13;
 
     if (!double_decel_move && !Vi_is_positive){
@@ -1527,14 +1583,20 @@ if (t >= t13 && t < t14) {
     acel_now = (jmax * tau14) - amax + (jmax / 2.0) * T9;
     float tempt_cal = amax - (jmax / 2.0) * T9;
     vel_target =   (jmax / 2.0) * pow(tau14, 2) - tempt_cal * tau14 + v2;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     
     }else{
     jerk_now = jmax_rampToCero;
     acel_now = (jmax_rampToCero * tau14) - amax_rampToCero + (jmax_rampToCero / 2.0) * T9;
     float tempt_cal_rampToCero = amax_rampToCero - (jmax_rampToCero / 2.0) * T9;
     vel_target =   (jmax_rampToCero / 2.0) * pow(tau14, 2) - tempt_cal_rampToCero * tau14 + v2_rd;
-
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
+
+    last_time = now_;
+    last_velocity = vel_target;
+    Last_position = pos_target;
+    last_acceleratio = acel_now;
 
     #ifdef __debug
     print_debug_variables();
@@ -1545,6 +1607,7 @@ if (t >= t13 && t < t14) {
 if (t >= t14 && t < t15) {
 // Code for the [t14, t15] time range
 
+    
     now_ = micros();
     //deltaTime = now_ - last_time;
     
@@ -1562,7 +1625,7 @@ if (t >= t14 && t < t15) {
     }else{
     jerk_now = jmax_rampToCero - (jmax_rampToCero / T15) * tau15;
     acel_now =  (jmax_rampToCero * tau15) - ((jmax_rampToCero / (2.0 * T15)) * pow(tau15, 2)) - amax_rampToCero + ((jmax_rampToCero / 2.0) * T9) + (jmax_rampToCero * T10);
-    vel_target = (jmax_rampToCero / 2.0) * pow(tau15, 2) - (jmax_rampToCero / (6.0 * T15)) * pow(tau15, 3) - (amax_rampToCero - (jmax_rampToCero / 2.0) * T9 - (jmax * T10)) * tau15 + v1_rd;
+    pos_target = Last_position + ((last_velocity + vel_target) / 2.0f + 0.5f * (last_acceleratio + acel_now) * deltaTime) * deltaTime;
     }
 
     last_time = now_;
