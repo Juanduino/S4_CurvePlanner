@@ -5,7 +5,7 @@ In development - not testet at this moment. Code compiles.
 This libery calculates and executes 4th order S-curve motion. 
 
 4th order S-curve is divided into 15 time segments. 
-It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 segments is requires.
+It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 time-segments is required.
 
 The S-curve is a smoother motion profile compared to the trapez, since acceleration and deceleration are curved.
 
