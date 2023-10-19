@@ -288,8 +288,8 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
 void S4_CurvePlanner::runPlannerOnTick(){
     // This should get entered 100 times each second (100Hz)
     
-    if ((unsigned long)(millis() - plannerTimeStap) > plannerPeriod){
-        plannerTimeStap = millis();
+    if ((unsigned long)(millis() - plannerTimeStep) > plannerPeriod){
+        plannerTimeStep = millis();
 
         
     
@@ -363,7 +363,7 @@ void S4_CurvePlanner::runPlannerOnTick(){
 void S4_CurvePlanner::CalculateTs(float Ts_vmax, float Ts_amax, float Ts_jmax) {
 
     // Step 1: Calculate Ts from displacement constraint
-     ds_max = dmax / (8 * smax);
+     float ds_max = dmax / (8 * smax);
      Ts_d = pow(ds_max, 0.25f);
 
     //vmax = (2 * pow(Ts, 3)) * smax;
