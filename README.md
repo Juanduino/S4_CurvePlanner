@@ -63,11 +63,13 @@ void MPlanner(char *cmd){
   
 //Here is a example of a loop that will run the planner on every tick.
 
-   // main FOC algorithm function
+void loop() {
+
+// main FOC algorithm function
    
   motor.loopFOC();
 
-  // Motion control function
+// Motion control function
   
   motor.move();
 
@@ -76,6 +78,8 @@ void MPlanner(char *cmd){
   commander.run();
   
   planner.runPlannerOnTick();
+  
+  }
 
 
 ```
