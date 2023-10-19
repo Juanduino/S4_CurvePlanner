@@ -51,24 +51,17 @@ void MPlanner(char *cmd){
 }
 
 
-
-And in the void setup() 
+//And in the void setup() 
  
- ....
-
   planner.linkMotor(&motor);
 	  
   commander.add('G', doPlanner, "Motion Planner");
   
   commander.add('M', MPlanner, "Motion Planner");
 
- ....
-  
-  
-  
-  
 
-  Here is a example of a loop that will run the planner on every tick.
+  
+//Here is a example of a loop that will run the planner on every tick.
 
    // main FOC algorithm function
    
