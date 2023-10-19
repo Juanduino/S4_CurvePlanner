@@ -38,6 +38,8 @@ Here is a move to 200. Pos_target is calculated using deltaTime, velocity_now, l
 
 [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)
 
+```
+
 S4_CurvePlanner planner(5);
 
 void doPlanner(char *cmd){
@@ -83,6 +85,6 @@ And in the void setup()
   planner.runPlannerOnTick();
 
 
-
+```
 
 
