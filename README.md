@@ -39,7 +39,6 @@ Here is a move to 200. Pos_target is calculated using deltaTime, velocity_now, l
 [FOR USE WITH SIMPLEFOC ](https://community.simplefoc.com/)
 
 ```cpp
-
 S4_CurvePlanner planner(5);
 
 void doPlanner(char *cmd){
@@ -49,20 +48,17 @@ void doPlanner(char *cmd){
 void MPlanner(char *cmd){
   planner.doMCommand(cmd);
 }
-
 ```
 
 
 //And in the void setup() 
 
 ```cpp
- 
   planner.linkMotor(&motor);
 	  
   commander.add('G', doPlanner, "Motion Planner");
   
   commander.add('M', MPlanner, "Motion Planner");
-
 ```
   
 //Here is a example of a loop that will run the planner on every tick.
@@ -85,8 +81,6 @@ void loop() {
   planner.runPlannerOnTick();
   
   }
-
-
 ```
 
 
