@@ -26,6 +26,7 @@ public:
 
 private:
     
+    //SETUP
     FOCMotor * motor;
     unsigned long plannerTimeStep;
     int plannerPeriod = 0.5; // 1000 / this number = Hz, i.e. 1000 / 100 = 10Hz, 1000 / 10 = 100Hz, 1000 / 5 = 200Hz, 1000 / 1 = 1000hZ
@@ -46,7 +47,7 @@ private:
     //Variables related to trajectory/time
     //Tau == DeltaTime
     float tau1, tau2, tau3, tau4, tau5, tau6, tau7, tau8, tau9, tau10, tau11, tau12, tau13, tau14, tau15;
-    
+
     //T(x) == TimeSegment duration
     float T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15;
 
@@ -92,7 +93,7 @@ private:
     float Tjd;
     float Tja;
 
-    //Acceleraton calculations
+    //Acceleration calculations
     float Tad;
     float Tav;
 
@@ -112,11 +113,8 @@ private:
     //M400 commands tells the planner to wait until all moves are completed before proceeding.
     bool m400_flag = false;
 
-    float Y_; //Velocity Target
-
-    //float Yd_;
-    //float Ydd_;
-    float Xi_, Xf_, Vi_, Ar_, Dr_, Vr_, Tv_;
+    //Initial values and target position
+    float Xi_, Xf_, Vi_;
 
     //Are we in a move
     bool isTrajectoryExecuting;
@@ -153,7 +151,7 @@ private:
     //CircuarBuffer holder for commands, set desired size.
     CircularBuffer buffer = CircularBuffer(100);
 
-    // Additional setpoints for trajectory
+    //Additional setpoints for trajectory
     float dXmin;
 
 };

@@ -317,7 +317,7 @@ void S4_CurvePlanner::runPlannerOnTick(){
         // we are in a move, let's calc the next position
         float timeSinceStartingTrajectoryInSeconds = (millis() - plannerStartingMovementTimeStamp) / 1000.0f;
         RuntimePlanner(timeSinceStartingTrajectoryInSeconds);
-        motor->target = Y_;
+        motor->target = vel_target;
 
         float EventHorizon =    0.1f; // 100ms
 
@@ -1073,7 +1073,7 @@ void S4_CurvePlanner::Initiate_Move(float Pos){
 
     // Now we need to do our calcs before we start moving
     calculateVariables( Xf_,  Xi_,  Vi_,  _Vmax_,  _Amax_,  _Jmax_,  _Smax_);
-    motor->target = Y_; // could possibly put this in the method above
+    motor->target = vel_target; // could possibly put this in the method above
     // Tell user how long this move will take
     #ifdef __debug
         SerialUSB.println("Starting to move to a new position");
