@@ -16,7 +16,7 @@ All the math for the 4th order planner was inspired by:
 
 
 
-Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
+Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port or USB connection,
 and execute the commands in the order they were received. This will make the S4_CurvePlanner capable of handeling varius G and M commands.
 
 In order to use it with the SimpleFOC library, the planner will need to be created and linked in the main.cpp file, and the runPlannerOnTick() function will need to be called in the main loop.
