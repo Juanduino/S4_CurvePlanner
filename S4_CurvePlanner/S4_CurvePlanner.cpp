@@ -121,7 +121,7 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
             // M204
             // Set acceleration
 
-        // Remove M so can convert to a float
+        commandSrt = commandSrt.substring(4);
         commandValue2 = commandSrt.toFloat();
         vmax = commandValue2;
         // Try calling the planner to use this new velocity value
@@ -135,12 +135,12 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
             }
 
 
-        if (commandValue_Int == 201.3){
+        if (commandValue_Int == 208){
+        //Note: Changed to 208 to avoid colision with 201(201.3) command´s
         // M201.3
         // Set jerk
 
-        // Remove M so can convert to a float
-        commandSrt = commandSrt.substring(5);
+        commandSrt = commandSrt.substring(4);
         commandValue2 = commandSrt.toFloat();
         _Jmax_= commandValue2;
      
