@@ -372,7 +372,7 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
 
 
 void S4_CurvePlanner::runPlannerOnTick(){
-    // This should get entered 100 times each second (100Hz)
+    // This could run 10 000 times / second (10kHz) ?
     
     if ((unsigned long)(millis() - plannerTimeStep) > plannerPeriod){
         plannerTimeStep = millis();
