@@ -244,10 +244,10 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
      if (commandValue_Int == 425){
         // M425
         // Backlash compensation
-        //  Note: Should not be needed with sense on shaft...Perhaps usefull if using belts or spring loaded screw w. tiny amount of slag 
-        // Note: This is outside the scope of this theoretical perfect move, since the machine constraints and physics may have some minute deviance. 
+        // Note: Should not be needed with sense on shaft...Perhaps usefull if using belts or spring loaded screw w. tiny amount of slag 
+        // This is outside the scope of this theoretical perfect move, since the machine constraints and physics may have some minute deviance. 
         // This deviance, between perfect move and actual move, can of cource add up over time, not to slag!
-        // Sure, with vision this acumulativ error get zeroed out, when homing to fiducals. Fixed machine pointers. 
+        // Sure, with vision this acumulativ error get zeroed out, when homing to fiducals or end-stop actuator/sensor. Fixed machine head/camera/vision/sensor pointers. 
 
     }
 
@@ -257,13 +257,13 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
     if (commandValue_Int == 205){
         // M205
         // Advanced settings
-        //  TODO  TODO TODO 
+        
 
     }
 
 
 /*
-Note: ?
+Note: TODO?
 M205 - Set Advanced Settings
 Description
 Set various motion settings. See parameters for details.
