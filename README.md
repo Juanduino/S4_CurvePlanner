@@ -5,7 +5,7 @@ In development - not testet at this moment. Code compiles.
 This libery calculates and executes 4th order S-curve motion. 
 
 4th order S-curve is divided into 15 time segments. 
-It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 7 time-segments is required.
+It is only when a constant-jerk time exist, that the algorithm uses all 15 time-segments. When max jerk is not reached, only 8/9 time-segments is required, depending on if a constant velocity phase exist.
 
 The S-curve is a smoother motion profile compared to the trapez, since acceleration and deceleration are curved.
 
@@ -16,7 +16,7 @@ All the math for the 4th order planner was inspired by:
 
 
 
-Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port,
+Furthermore, the goal is to implement the planner with a circular buffer, so that the planner can be fed commands from a serial port or USB connection,
 and execute the commands in the order they were received. This will make the S4_CurvePlanner capable of handeling varius G and M commands.
 
 In order to use it with the SimpleFOC library, the planner will need to be created and linked in the main.cpp file, and the runPlannerOnTick() function will need to be called in the main loop.
