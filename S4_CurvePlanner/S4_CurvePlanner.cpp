@@ -241,7 +241,14 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         #endif 
     }
 
+     if (commandValue_Int == 425){
+        // M425
+        // Backlash compensation
+        //  Note: Should not be needed with sense on shaft...Perhaps usefull if using belts or spring loaded screw w. tiny amount of slag 
 
+    }
+
+    // https://snapmaker.github.io/Documentation/gcode/M425
 
 
     if (commandValue_Int == 205){
@@ -251,6 +258,24 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
 
     }
 
+
+/*
+Note: ?
+M205 - Set Advanced Settings
+Description
+Set various motion settings. See parameters for details.
+
+Notes
+View the current setting with M503.
+
+....
+
+https://snapmaker.github.io/Documentation/gcode/M425
+
+
+*/
+
+    
 /*
         #ifdef __debug
             SerialUSB.print("M Command :  ");
