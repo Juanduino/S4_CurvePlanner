@@ -311,7 +311,7 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
     // Remove V so can convert to a float
     commandSrt = commandSrt.substring(1);
     commandValue = commandSrt.toFloat();
-    //Vmax_ = commandValue;
+    _Vmax_ = commandValue;
     // Try calling the planner to use this new velocity value
     // We have to use the current pos, vel, and accel
     // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
@@ -327,7 +327,7 @@ void S4_CurvePlanner::executeCommand(char *gCodeCommand, char *gCodeCommand2){
     // Remove A so can convert to a float
     commandSrt = commandSrt.substring(1);
     commandValue = commandSrt.toFloat();
-    amax = commandValue;
+    _Amax_ = commandValue;
     //Dmax_ = Amax_;
     // Try calling the planner to use this new acceleration value
     // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
