@@ -34,6 +34,7 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         //SerialUSB.println(MCommand);
     #endif
 
+
       // Parse this string for vals to int
         String commandSrt = String(MCommand);
         int commandValue_Int = 0;
@@ -45,29 +46,46 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         // M115
         // Send firmware version and capabilities
         // Note: Not final. Suggested by co-pilot.
-        SerialUSB.println("FIRMWARE_NAME:SimpleFOC");
-        SerialUSB.println("FIRMWARE_VERSION:1.0.0");
-        SerialUSB.println("FIRMWARE_URL:GIT_URL");
-        SerialUSB.println("PROTOCOL_VERSION:1.0");
-        SerialUSB.println("AVAILABLE_COMMANDS:M,V,A,L");
-        SerialUSB.println("CAPABILITY:MOTOR_VOLTAGE,INPUT_VOLTAGE,POWER_SUPPLY,POSITION_CONTROL,VELOCITY_CONTROL,VELOCITY_RAMP,TRAJECTORY_CONTROL");
-        SerialUSB.println("POWER_SUPPLY:24V");
-        SerialUSB.println("MOTOR_VOLTAGE:24V");
-        SerialUSB.println("INPUT_VOLTAGE:24V");
-        SerialUSB.println("POSITION_CONTROL:1");
-        SerialUSB.println("VELOCITY_CONTROL:1");
-        SerialUSB.println("VELOCITY_RAMP:1");
-        SerialUSB.println("TRAJECTORY_CONTROL:1");
-        SerialUSB.println("POSITION_MIN:-3.14159265359");
-        SerialUSB.println("POSITION_MAX:3.14159265359");
-        SerialUSB.println("VELOCITY_MIN:-12.5663706144");
-        SerialUSB.println("VELOCITY_MAX:12.5663706144");
-        SerialUSB.println("ACCELERATION_MIN:-12.5663706144");
-        SerialUSB.println("ACCELERATION_MAX:12.5663706144");
+        SerialUSB.println("FIRMWARE_NAME: ** CurvePlanner-S4 ** ");
+        SerialUSB.println("FIRMWARE_VERSION: ** 1.0.1 ** ");
+        SerialUSB.println("FIRMWARE_URL:");
+        SerialUSB.println("https://github.com/Juanduino/S4_CurvePlanner/tree/main/S4_CurvePlanner");
+        SerialUSB.println("PROTOCOL_VERSION: ** 1.0.1 **");
+        SerialUSB.println("AVAILABLE_COMMANDS:M, G");
+        SerialUSB.println("CAPABILITY:TRAJECTORY_CONTROL");
+        SerialUSB.println("POWER_SUPPLY:");
+        SerialUSB.println(voltage_power_supply);
+        SerialUSB.println("MOTOR_VOLTAGE_LIMIT:");
+        SerialUSB.println(voltage_limit);
+        SerialUSB.println("SENSE_VOLTAGE:");
+        SerialUSB.println(voltage_sense_divider);
+
+        SerialUSB.println("LAST_POSITION:");
+        SerialUSB.println(Last_position);
+        SerialUSB.println("LAST_VEL:");
+        SerialUSB.println(last_velocity);
+        SerialUSB.println("LAST_ACCEL:");
+        SerialUSB.println(last_acceleratio);
+        SerialUSB.println("deltaTIME:");
+        SerialUSB.println(deltaTime);
+        
 
         }
 
-        //The controller can report axes positions, including extra axes (A, B, C etc.), typically with the M114 command.
+    /***********************************************************************************
+     
+    //Variables for calculating pos_target using deltaTime, velocity and acceleration.
+    float Last_position;
+    float last_velocity;
+    float last_acceleratio;                                 
+    float now_;
+    float deltaTime;
+
+    *************************************************************************************/
+
+
+    //The controller can report axes positions, including extra axes (A, B, C etc.), typically with the M114 command.
+
 
         if (commandValue_Int == 114){
         SerialUSB.println("ok");
@@ -83,6 +101,8 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         SerialUSB.print("X:");
         SerialUSB.println(mm, 4); } 
 
+
+
         // The controller must be able to wait for motion completion, typically with the M400 command. Any further commands sent after the M400 must be suspended until motion completion. 
         // The controller must only acknowledge the command, when motion is complete i.e. the "ok" (COMMAND_CONFIRM_REGEX) response must be suspended until then, providing blocking 
         // synchronization to OpenPnP.
@@ -96,10 +116,10 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
 
         //The controller must support dynamic acceleration and/or jerk limits, typically by the M204 command for acceleration or the M201.3 command for jerk.
         float commandValue2;
+
             if (commandValue_Int == 204){
             // M204
             // Set acceleration
-    
 
         // Remove M so can convert to a float
         commandValue2 = commandSrt.toFloat();
@@ -120,18 +140,18 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         // Set jerk
 
         // Remove M so can convert to a float
-        //TODO
-
-        //commandValue2 = commandSrt.toFloat();
-        //Amax_ = commandValue2;
-        //Dmax_ = Amax_;
-
+        commandSrt = commandSrt.substring(5);
+        commandValue2 = commandSrt.toFloat();
+        _Jmax_= commandValue2;
+     
+     
         // Try calling the planner to use this new acceleration value
         // calc_plan_trapezoidal_path_at_start(Xf_, Xi_, Vi_, Vmax_, Amax_, Dmax_);
         //calculateTrapezoidalPathParameters(Xf_, motor->shaft_angle, motor->shaft_velocity, Vmax_, Amax_, Dmax_);
+
         #ifdef __debug
-            SerialUSB.print("User wants acceleration change. Amax_: ");
-            SerialUSB.println(amax);
+        SerialUSB.print("JERK_MAX: ");
+        SerialUSB.println(_Jmax_);
         #endif 
        
             }
@@ -140,37 +160,70 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
     //The homing procedure must be configurable, typically with the M206 command. 
     //The controller must be able to home to a position other than 0.
 
-    if (commandValue_Int == 206){
-    // M206
-    // Set current position, for homing to 0. 
+        if (commandValue_Int == 206){
+        // M206
+        // Set current position, for homing to 0. 
 
-    commandSrt = commandSrt.substring(4);
-    commandValue2 = commandSrt.toFloat();
+        commandSrt = commandSrt.substring(4);
+        commandValue2 = commandSrt.toFloat();
 
-    motor->shaft_angle = commandValue2; 
+        motor->shaft_angle = commandValue2; 
 
-    // NOTE: Probably need to set position in a better mannor.
+        // NOTE: Probably need to set position in a better mannor.
 
-    SerialUSB.print("Homing to: ");
-    SerialUSB.println(commandValue2);
+        SerialUSB.print("HOMING_TO:");
+        SerialUSB.println(commandValue2);
 
-    SerialUSB.print("Chekking shaft_angle : ");
-    SerialUSB.println(motor->shaft_angle);
+        SerialUSB.print("POS:");
+        SerialUSB.println(motor->shaft_angle); }
 
-    }
+
+
+        if (commandValue_Int == 207){
+        // M207 - NEW M-COMMAND
+        // Set MAX SNAP
+
+        commandSrt = commandSrt.substring(4);
+        commandValue2 = commandSrt.toFloat();
+        _Smax_= commandValue2;
+
+        #ifdef __debug
+        SerialUSB.print("SNAP_MAX: ");
+        SerialUSB.println(_Smax_);
+        #endif 
+        
+          }
+
 
 
     if (commandValue_Int == 203){
         // M203
-        // Set maximum feedrate
-        //  TODO  TODO TODO
+        // Set maximum feedrate/velocity
+        commandSrt = commandSrt.substring(4);
+        commandValue2 = commandSrt.toFloat();
+        _Vmax_= commandValue2;
+
+        #ifdef __debug
+        SerialUSB.print("VEL_MAX: ");
+        SerialUSB.println(_Jmax_);
+        #endif 
+
     }
     
 
     if (commandValue_Int == 201){
         // M201
         // Set maximum acceleration
-        //  TODO  TODO TODO
+        commandSrt = commandSrt.substring(4);
+        commandValue2 = commandSrt.toFloat();
+        _Amax_= commandValue2;
+
+        #ifdef __debug
+        SerialUSB.print("ACCEL_MAX: ");
+        SerialUSB.println(_Jmax_);
+        #endif 
+
+
 
     }
 
@@ -178,8 +231,17 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
     if (commandValue_Int == 202){
         // M202
         // Set maximum jerk
-        //  TODO  TODO TODO 
+        commandSrt = commandSrt.substring(4);
+        commandValue2 = commandSrt.toFloat();
+        _Jmax_= commandValue2;
+
+        #ifdef __debug
+        SerialUSB.print("JERK_MAX: ");
+        SerialUSB.println(_Jmax_);
+        #endif 
     }
+
+
 
 
     if (commandValue_Int == 205){
@@ -189,7 +251,6 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
 
     }
 
-        // Place different if statements like "fetch current position".
 /*
         #ifdef __debug
             SerialUSB.print("M Command :  ");
