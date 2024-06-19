@@ -247,6 +247,7 @@ void S4_CurvePlanner::doMCommand(char *MCommand){
         //  Note: Should not be needed with sense on shaft...Perhaps usefull if using belts or spring loaded screw w. tiny amount of slag 
         // Note: This is outside the scope of this theoretical perfect move, since the machine constraints and physics may have some minute deviance. 
         // This deviance, between perfect move and actual move, can of cource add up over time, not to slag!
+        // Sure, with vision this acumulativ error get zeroed out, when homing to fiducals. Fixed machine pointers. 
 
     }
 
